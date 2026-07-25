@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מבחן תזמוני בדיקות בטיחות בעבודה</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --success: #16a34a;
+            --error: #dc2626;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 750px;
+            padding: 30px;
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-top: 0;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+            text-align: center;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--primary-light);
+        }
+
+        .question-card {
+            margin-bottom: 25px;
+        }
+
+        .question-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: #f1f5f9;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            text-align: right;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text);
+            font-family: inherit;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #e2e8f0;
+            border-color: var(--primary-light);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background-color: #dcfce7;
+            border-color: var(--success);
+            color: #14532d;
+            font-weight: bold;
+        }
+
+        .option-btn.incorrect {
+            background-color: #fee2e2;
+            border-color: var(--error);
+            color: #7f1d1d;
+        }
+
+        .feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-area.correct {
+            background-color: #f0fdf4;
+            border: 1px solid var(--success);
+            color: #166534;
+        }
+
+        .feedback-area.incorrect {
+            background-color: #fef2f2;
+            border: 1px solid var(--error);
+            color: #991b1b;
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .btn-next {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .btn-next:hover {
+            background-color: var(--primary-light);
+        }
+
+        .summary-card {
+            display: none;
+            text-align: center;
+        }
+
+        .summary-score {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+
+        .summary-details {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .btn-restart {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>מבחן הסמכה: תזמוני בדיקות תקופתיות בבטיחות בעבודה</h1>
+
+    <div id="quiz-screen">
+        <div class="header-info">
+            <span id="question-count">שאלה 1 מתוך 20</span>
+            <span id="current-score">ניקוד: 0</span>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title" id="question-text">טוען שאלה...</div>
+            <div class="options-list" id="options-container"></div>
+        </div>
+
+        <div id="feedback" class="feedback-area">
+            <div class="feedback-title" id="feedback-title"></div>
+            <div id="feedback-text"></div>
+        </div>
+
+        <button id="btn-next" class="btn-next" onclick="nextQuestion()">לשאלה הבאה</button>
+    </div>
+
+    <div id="summary-screen" class="summary-card">
+        <h2>סיכום תוצאות המבחן</h2>
+        <div class="summary-score" id="final-score">0%</div>
+        <div class="summary-details" id="final-details"></div>
+        <button class="btn-restart" onclick="restartQuiz()">התחל מבחן מחדש</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    {
+        question: "1. לפי פקודת הבטיחות בעבודה [נוסח חדש], תשנ\"ז-1970, באיזה תדירות מחויב תופש מפעל לערוך בדיקה יסודית לכל דוד קיטור על ידי בודק מוסמך?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת ל-14 חודשים",
+            "ד. אחת ל-24 חודשים"
+        ],
+        correct: 2,
+        explanation: "סעיף 105 לפקודת הבטיחות בעבודה קובע כי דוד קיטור ייבדק בדיקה יסודית על ידי בודק מוסמך לפחות אחת ל-14 חודשים."
+    },
+    {
+        question: "2. מהי התדירות המרבית לבדיקת תופסני קצה, מענבים ואביזרי הרמה לפי פקודת הבטיחות בעבודה?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת ל-14 חודשים",
+            "ד. אחת ל-24 חודשים"
+        ],
+        correct: 0,
+        explanation: "סעיף 76 לפקודת הבטיחות בעבודה קובע כי אביזרי הרמה (כולל מענבים, שרשראות וכו') ייבדקו בדיקה יסודית בידי בודק מוסמך לפחות אחת ל-6 חודשים."
+    },
+    {
+        question: "3. בהתאם לתקנות הבטיחות בעבודה (עגורנאים), התשנ\"ב-1992, מהי התדירות שבה חייב עגורנאי לעבור בדיקה רפואית תקופתית?",
+        options: [
+            "א. אחת לשנה",
+            "ב. אחת לשנתיים",
+            "ג. אחת לשלוש שנים",
+            "ד. אחת לחמש שנים"
+        ],
+        correct: 2,
+        explanation: "לפי תקנות עגורנאים, עגורנאי שטרם מלאו לו 50 שנה יעבור בדיקה רפואית תקופתית אחת ל-3 שנים (מעל גיל 50 התדירות תכופה יותר)."
+    },
+    {
+        question: "4. לפי תקנות הבטיחות בעבודה (ציוד מגן אישי), התשנ\"ז-1997, באיזו תדירות יש לבדוק תקינות של ציוד מגן אישי לקשר עין ופנים החשוף לשחיקה?",
+        options: [
+            "א. לפני כל שימוש ובדיקה יסודית אחת ל-12 חודשים",
+            "ב. אחת ל-3 חודשים בלבד",
+            "ג. אחת ל-6 חודשים בידי מעבדה מוסמכת",
+            "ד. רק לאחר אירוע כשל או פגיעה בציוד"
+        ],
+        correct: 0,
+        explanation: "ציוד מגן אישי נדרש בבדיקה עצמית של העובד לפני כל שימוש, ובנוסף בדיקת תקינות תקופתית כפי שמורה היצרן או התקנות (לרוב אחת ל-12 חודשים לפחות)."
+    },
+    {
+        question: "5. באיזה מרווח זמן מחויב מעסיק לבצע בדיקה סביבתית-תעסוקתית של גורמים כימיים מזיקים בשיגרת עבודה (כאשר אינם חומרים מסרטנים מוגדרים)?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת ל-24 חודשים",
+            "ד. אחת ל-36 חודשים"
+        ],
+        correct: 1,
+        explanation: "בתקנות הבטיחות בעבודה (ניטור סביבתי וניטור ביולוגי של עובדים בגורמים מזיקים), תדירות הניטור הסביבתי הרגילה לגורמים כימיים היא אחת ל-12 חודשים."
+    },
+    {
+        question: "6. מהי תדירות הבדיקה היסודית הנדרשת עבור מכונת הרמה (כגון עגורן, מעלון או מלגזה) לפי פקודת הבטיחות בעבודה?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת ל-14 חודשים",
+            "ד. אחת ל-24 חודשים"
+        ],
+        correct: 2,
+        explanation: "סעיף 81 לפקודת הבטיחות בעבודה קובע כי מכונת הרמה תיבדק בדיקה יסודית על ידי בודק מוסמך לפחות אחת ל-14 חודשים."
+    },
+    {
+        question: "7. על פי תקנות הבטיחות בעבודה (גורמים פיזיים - רעש), התשמ\"ד-1984, באיזה תדירות יש לערוך בדיקת סינון שמיעה לעובד החשוף לרעש מזיק?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים (אחת לשנה)",
+            "ג. אחת לשנתיים",
+            "ד. אחת ל-3 שנים"
+        ],
+        correct: 1,
+        explanation: "עובד החשוף לרעש מזיק חייב בבדיקת שמיעה תקופתית אחת ל-12 חודשים במכון לרפואה תעסוקתית או מורשה."
+    },
+    {
+        question: "8. לפי תקנות הבטיחות בעבודה (עבודה בגובה), התשsn\"ז-2007, מהי תדירות הרענון הנדרשת לעובד בגובה מוסמך?",
+        options: [
+            "א. אחת לשנה",
+            "ב. אחת לשנתיים",
+            "ג. אחת ל-3 שנים",
+            "ד. אחת ל-5 שנים"
+        ],
+        correct: 1,
+        explanation: "לפי תקנות עבודה בגובה, תוקף אישור ההדרכה הוא לשנתיים, ולפיכך יש לבצע רענון הדרכה אחת לשנתיים."
+    },
+    {
+        question: "9. באיזו תדירות יש לבדוק בדיקה יסודית קולטי אוויר (מכל לחץ) המחוברים למדחס, לפי פקודת הבטיחות בעבודה?",
+        options: [
+            "א. אחת ל-12 חודשים",
+            "ב. אחת ל-14 חודשים",
+            "ג. אחת ל-24 חודשים",
+            "ד. אחת ל-26 חודשים"
+        ],
+        correct: 3,
+        explanation: "סעיף 115 לפקודת הבטיחות בעבודה קובע כי קולט אוויר ייבדק בדיקה יסודית על ידי בודק מוסמך לפחות אחת ל-26 חודשים."
+    },
+    {
+        question: "10. מהי תדירות הבדיקה הרפואית התקופתית הנדרשת לעובדים החשופים לקרינה מייננת בהתאם לתקנות הרלוונטיות?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת לשנתיים",
+            "ד. לפי החלטת הרופא המוסמך בלבד אך לא יותר מ-3 שנים"
+        ],
+        correct: 1,
+        explanation: "תקנות הבטיחות בעבודה (עובדים בקרינה מייננת) קובעות בדיקה רפואית תקופתית אחת ל-12 חודשים (אלא אם נקבע אחרת על ידי הרופא המוסמך)."
+    },
+    {
+        question: "11. באיזו תדירות חייב מעסיק לבצע רענון הדרכת בטיחות לכלל עובדי המפעל/האתר (תקנות ארגון הפיקוח על העבודה)?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת לשנה לפחות",
+            "ג. אחת לשנתיים",
+            "ד. רק בעת קבלה לעבודה"
+        ],
+        correct: 1,
+        explanation: "תקנות ארגון הפיקוח על העבודה (מסירת מידע והדרכת עובדים), התשנ\"ד-1994, מחייבות לקיים הדרכה חוזרת לפחות אחת לשנה."
+    },
+    {
+        question: "12. מהי תדירות הבדיקה התקופתית הנדרשת למעליות נוסעים ומשא לפי פקודת הבטיחות בעבודה?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת ל-14 חודשים",
+            "ד. אחת ל-24 חודשים"
+        ],
+        correct: 0,
+        explanation: "סעיף 60 לפקודת הבטיחות בעבודה קובע כי מעלית נבדקת בדיקה יסודית בידי בודק מוסמך לפחות אחת ל-6 חודשים."
+    },
+    {
+        question: "13. לפי תקנות הבטיחות בעבודה (בטיחות ולגיהות בעבודה עם מסכים), מה תדירות הבדיקה הרפואית/בדיקת ראייה המומלצת/נדרשת לעובדי מסך?",
+        options: [
+            "א. אחת לשנה",
+            "ב. אחת לשנתיים",
+            "ג. אחת ל-3 שנים",
+            "ד. לפי דרישת העובד או אחת לשנתיים"
+        ],
+        correct: 3,
+        explanation: "בדיקות ראייה לעובדי מול מסכים מבוצעות בעת הקבלה לעבודה ולאחר מכן אחת לשנתיים, או לפי תלונה/דרישה של העובד."
+    },
+    {
+        question: "14. מהי תדירות הבדיקה התקופתית של מערכת הארקה ולוחות חשמל באתר בנייה (תקנות הבטיחות בעבודה - חשמל)?",
+        options: [
+            "א. אחת ל-3 חודשים",
+            "ב. אחת ל-6 חודשים",
+            "ג. אחת ל-12 חודשים",
+            "ד. לפני תחילת השימוש באתר בלבד"
+        ],
+        correct: 2,
+        explanation: "בדיקת מתקן החשמל הנייד/זמני באתר בנייה (כולל רציפות הארקה ומפסיקי פחת) מבוצעת אחת ל-12 חודשים לפחות על ידי חשמלאי מוסמך."
+    },
+    {
+        question: "15. באיזו תדירות יש לבדוק מיתקן לחץ המכיל קיטור או גז דחוס (שאינו דוד קיטור או קולט אוויר)?",
+        options: [
+            "א. אחת ל-12 חודשים",
+            "ב. אחת ל-14 חודשים",
+            "ג. אחת ל-24 חודשים",
+            "ד. אחת ל-38 חודשים"
+        ],
+        correct: 2,
+        explanation: "מיתקני לחץ מסוימים ומכלים ייעודיים נבדקים בדיקה יסודית בידי בודק מוסמך אחת ל-24 חודשים לפי פקודת הבטיחות."
+    },
+    {
+        question: "16. על פי תקנות הבטיחות בעבודה (עגורני צריח), מהי התדירות שבה יש לבצע בדיקה יסודית לעגורן צריח העומד באותו אתר בנייה?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת ל-14 חודשים",
+            "ד. רק בעת הרכבתו מחדש"
+        ],
+        correct: 0,
+        explanation: "עגורן צריח הנמצא באתר בנייה נדרש לבדיקה יסודית בידי בודק מוסמך אחת ל-6 חודשים (שלא כמו מכונת הרמה רגילה שהיא 14 חודשים)."
+    },
+    {
+        question: "17. באיזו תדירות יש לערוך ניטור ביולוגי לעובדים החשופים לעופרת (בהתאם לתקנות הבטיחות בעבודה בעניין עופרת)?",
+        options: [
+            "א. אחת ל-3 חודשים (או 6 חודשים בהתאם לרמת החשיפה)",
+            "ב. אחת ל-12 חודשים בלבד",
+            "ג. אחת לשנתיים",
+            "ד. אחת ל-36 חודשים"
+        ],
+        correct: 0,
+        explanation: "הניטור הביולוגי לרמת עופרת בדם מבוצע בתדירות גבוהה, לרוב אחת ל-3 עד 6 חודשים, תלוי בריכוז המדידות הקודמות."
+    },
+    {
+        question: "18. מה תדירות הבדיקה הנדרשת למערכות גילוי וכיבוי אש אוטומטיות במפעל לפי הוראות נציב כבאות והצלה והתקנים המאומצים?",
+        options: [
+            "א. אחת ל-3 חודשים",
+            "ב. אחת ל-6 חודשים",
+            "ג. אחת ל-12 חודשים",
+            "ד. אחת ל-24 חודשים"
+        ],
+        correct: 2,
+        explanation: "מערכות גילוי וכיבוי אש נדרשות לביקורת ותחזוקה תקופתית בידי מעבדה/טכנאי מוסמך אחת ל-12 חודשים (תקן ישראלי 1220/1596)."
+    },
+    {
+        question: "19. מהי התדירות שבה יש לבדוק שרשראות, חבלים ומנגנוני הרמה של ליפט (מגביה כלי רכב) במוסכים?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת ל-14 חודשים",
+            "ד. אחת ל-24 חודשים"
+        ],
+        correct: 2,
+        explanation: "מגביה כלי רכב (ליפט) מוגדר כמכונת הרמה, ולפיכך חלה עליו חובת בדיקה יסודית בידי בודק מוסמך אחת ל-14 חודשים."
+    },
+    {
+        question: "20. לפי תקנות הבטיחות בעבודה (עבודה במוסכים), באיזו תדירות יש לבדוק את תקינות המערכות לשאיבת גזי פליטה במבנה סגור?",
+        options: [
+            "א. אחת ל-6 חודשים",
+            "ב. אחת ל-12 חודשים",
+            "ג. אחת לשנתיים",
+            "ד. אחת ל-3 שנים"
+        ],
+        correct: 1,
+        explanation: "מערכות יניקה ואוורור מלאכותי המיועדות לסילוק גורמים מזיקים/רעילים נבדקות בדיקת תקינות ויעילות אחת ל-12 חודשים."
+    }
+];
+
+let currentQuestion = 0;
+let score = 0;
+let userAnswers = [];
+
+function loadQuestion() {
+    const q = quizData[currentQuestion];
+    document.getElementById('question-count').innerText = `שאלה ${currentQuestion + 1} מתוך ${quizData.length}`;
+    document.getElementById('question-text').innerText = q.question;
+    
+    const optionsContainer = document.getElementById('options-container');
+    optionsContainer.innerHTML = '';
+
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => selectOption(idx);
+        optionsContainer.appendChild(btn);
+    });
+
+    document.getElementById('feedback').style.display = 'none';
+    document.getElementById('btn-next').style.display = 'none';
+}
+
+function selectOption(selectedIndex) {
+    const q = quizData[currentQuestion];
+    const buttons = document.querySelectorAll('.option-btn');
+    
+    buttons.forEach(btn => btn.disabled = true);
+
+    const isCorrect = selectedIndex === q.correct;
+    if (isCorrect) {
+        score++;
+        document.getElementById('current-score').innerText = `ניקוד: ${score}`;
+    }
+
+    userAnswers.push({
+        question: q.question,
+        selected: selectedIndex,
+        correct: q.correct,
+        isCorrect: isCorrect
+    });
+
+    // Visual styles for options
+    buttons[selectedIndex].classList.add(isCorrect ? 'correct' : 'incorrect');
+    if (!isCorrect) {
+        buttons[q.correct].classList.add('correct');
+    }
+
+    // Feedback area
+    const feedbackEl = document.getElementById('feedback');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackText = document.getElementById('feedback-text');
+
+    feedbackEl.style.display = 'block';
+    if (isCorrect) {
+        feedbackEl.className = 'feedback-area correct';
+        feedbackTitle.innerText = 'תשובה נכונה!';
+    } else {
+        feedbackEl.className = 'feedback-area incorrect';
+        feedbackTitle.innerText = `תשובה שגויה. התשובה הנכונה היא: ${q.options[q.correct]}`;
+    }
+    feedbackText.innerText = q.explanation;
+
+    document.getElementById('btn-next').style.display = 'block';
+}
+
+function nextQuestion() {
+    currentQuestion++;
+    if (currentQuestion < quizData.length) {
+        loadQuestion();
+    } else {
+        showSummary();
+    }
+}
+
+function showSummary() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    const summaryScreen = document.getElementById('summary-screen');
+    summaryScreen.style.display = 'block';
+
+    const percentage = Math.round((score / quizData.length) * 100);
+    document.getElementById('final-score').innerText = `${percentage}%`;
+    document.getElementById('final-details').innerText = 
+        `ענית נכון על ${score} שאלות מתוך ${quizData.length} (תשובות שגויות: ${quizData.length - score}).`;
+}
+
+function restartQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    userAnswers = [];
+    document.getElementById('current-score').innerText = `ניקוד: 0`;
+    document.getElementById('summary-screen').style.display = 'none';
+    document.getElementById('quiz-screen').style.display = 'block';
+    loadQuestion();
+}
+
+// Start on load
+loadQuestion();
+</script>
+
+</body>
+</html>

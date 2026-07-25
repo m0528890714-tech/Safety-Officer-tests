@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מבחן בטיחות בעבודה - חוק ארגון הפיקוח על העבודה</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-hover: #1e40af;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #cbd5e1;
+            --correct: #16a34a;
+            --correct-bg: #f0fdf4;
+            --incorrect: #dc2626;
+            --incorrect-bg: #fef2f2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.6rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .progress {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: #ffffff;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 18px;
+            text-align: right;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .option-btn.selected {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+            font-weight: 600;
+        }
+
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button.action-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.action-btn:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            padding: 18px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .feedback.correct {
+            background-color: var(--correct-bg);
+            color: #14532d;
+            border: 1.5px solid #bbf7d0;
+        }
+
+        .feedback.incorrect {
+            background-color: var(--incorrect-bg);
+            color: #7f1d1d;
+            border: 1.5px solid #fecaca;
+        }
+
+        .explanation {
+            margin-top: 8px;
+            font-weight: normal;
+            font-size: 0.95rem;
+        }
+
+        .summary-box {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+
+        .results-details {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 25px 0;
+            font-size: 1.2rem;
+        }
+
+        .results-details .correct-text { color: var(--correct); font-weight: bold; }
+        .results-details .incorrect-text { color: var(--incorrect); font-weight: bold; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>מבחן הסמכה: חוק ארגון הפיקוח על העבודה, תשי"ד-1954</h1>
+
+    <!-- מסך שאלות -->
+    <div id="quiz-screen">
+        <div class="progress" id="progress-text">שאלה 1 מתוך 20</div>
+        <div class="question-box" id="question-text"></div>
+        <div class="options" id="options-container"></div>
+        
+        <button id="submit-btn" class="action-btn" onclick="submitAnswer()" disabled>אשר תשובה</button>
+        <button id="next-btn" class="action-btn hidden" onclick="nextQuestion()">לשאלה הבאה</button>
+
+        <div id="feedback-box" class="feedback hidden"></div>
+    </div>
+
+    <!-- מסך סיכום -->
+    <div id="summary-screen" class="hidden">
+        <div class="summary-box">
+            <h2>המבחן הושלם!</h2>
+            <p>להלן סיכום התוצאות שלך במבחן חוק ארגון הפיקוח על העבודה:</p>
+            <div class="score-display" id="final-score">0%</div>
+            <div class="results-details">
+                <div>תשובות נכונות: <span class="correct-text" id="correct-count">0</span></div>
+                <div>תשובות שגויות: <span class="incorrect-text" id="incorrect-count">0</span></div>
+            </div>
+            <button class="action-btn" onclick="resetQuiz()">התחל מבחן מחדש</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            q: "סעיף 3 לחוק מגדיר את סמכויות כניסתו של מפקח עבודה. באילו תנאים רשאי מפקח עבודה להיכנס למקום עבודה?",
+            options: [
+                "א' בכל עת ביום או בלילה, בתנאי שיש בידו צו חיפוש חתום על ידי שופט",
+                "ב' בכל עת ביום או בלילה, אם יש לו יסוד להניח שבמקום מועבד אדם, או בכל עת ביום כשיש לו יסוד להניח כי המקום הוא מקום עבודה",
+                "ג' בשעות העבודה הרגילות המקובלות במשק בלבד, ובלבד שהודיע למעסיק 24 שעות מראש",
+                "ד' בשעות היום בלבד, ורק בנוכחות מנהל העבודה או המעסיק"
+            ],
+            correct: 1,
+            exp: "לפי סעיף 3(א)(1) לחוק, מפקח עבודה רשאי להיכנס בכל עת ביום או בלילה לכל מקום שיש לו יסוד להניח כי מועבד בו אדם, וביום לכל מקום שיש לו יסוד להניח כי הוא מקום עבודה."
+        },
+        {
+            q: "מפקח עבודה אזורי החליט להוציא צו בטיחות לפי סעיף 6 לחוק. מהי משמעותו המשפטית של צו זה?",
+            options: [
+                "א' הוראה להטלת קנס מנהלי חלף נקיטת הליכים פליליים נגד המעסיק",
+                "ב' צו המורה למעסיק לנקוט אמצעים תוך זמן קצוב או המפסיק עבודה/שימוש במתקן עד לתיקון הסכנה",
+                "ג' המלצה לא מחייבת המשמשת כחומר ראייתי בלבד בבית הדין לעבודה",
+                "ד' דרישה להשעיית ממונה הבטיחות מתפקידו עד לביצוע בדיקה מחודשת"
+            ],
+            correct: 1,
+            exp: "סעיף 6 לחוק קובע כי צו בטיחות מורה למעסיק לנקוט צעדים מסוימים תוך זמן קצוב או להפסיק את העבודה/השימוש במכונה או במתקן אם נשקפת סכנה לשלום אדם."
+        },
+        {
+            q: "מעסיק המבקש לערער על צו בטיחות או צו שיפור שהוציא מפקח עבודה, לאיזו ערכאה עליו לפנות תוך הזמן הקבוע בחוק?",
+            options: [
+                "א' לבית הדין האזורי לעבודה",
+                "ב' לשר העבודה והרווחה",
+                "ג' למפקח העבודה הראשי",
+                "ד' לבית משפט השלום"
+            ],
+            correct: 0,
+            exp: "סעיף 9ב לחוק קובע כי הרואה עצמו נפגע מצו בטיחות או צו שיפור רשאי לערער עליו לפני בית הדין האזורי לעבודה."
+        },
+        {
+            q: "מהו מהות התפקיד העיקרי של ועדת בטיחות במפעל לפי סעיף 10 לחוק?",
+            options: [
+                "א' להטיל קנסות וקנסות משמעת על עובדים המפרים הוראות בטיחות",
+                "ב' לקבוע ולהציע דרכים לשיפור הבטיחות והגיהות, ולחקור סיבות לתאונות עבודה במפעל",
+                "ג' לאשר את תקציב הרכש של ציוד המגן האישי במפעל",
+                "ד' לייצג את המפעל בפני בית הדין לעבודה בעת תביעות נזיקין"
+            ],
+            correct: 1,
+            exp: "לפי סעיף 10 לחוק, מתפקידי ועדת הבטיחות לקבוע תנאי בטיחות, לייעץ ולסייע בהטמעתם, לחקור סיבות לתאונות עבודה ולהציע דרכים למניעתן."
+        },
+        {
+            q: "מפעל המעסיק 30 עובדים אינו הקים ועדת בטיחות. מה קובע סעיף 9 לחוק לגבי חובת הקמת ועדת בטיחות?",
+            options: [
+                "א' החובה חלה רק על מפעלים המעסיקים 50 עובדים ויותר",
+                "ב' החובה חלה על כל מפעל שבו מועסקים 25 עובדים לפחות",
+                "ג' החובה חלה על מפעלים המוגדרים ברמת סיכון גבוהה בלבד",
+                "ד' החובה חלה רק במפעל שבו נדרש זאת מפקח עבודה ראשי בכתב"
+            ],
+            correct: 1,
+            exp: "סעיף 9(א) לחוק קובע כי בכל מפעל שבו מועסקים 25 עובדים לפחות חובה להקים ועדת בטיחות."
+        },
+        {
+            q: "כיצד מורכבת ועדת בטיחות במפעל מבחינת ייצוג העובדים והנהלת המפעל לפי סעיף 12 לחוק?",
+            options: [
+                "א' שליש נציגי מעסיק ושני שלישים נציגי עובדים",
+                "ב' מורכבת מנציגי המעסיק והעובדים במספר שווה",
+                "ג' לפחות 75% נציגי עובדים שנבחרו בבחירות דמוקרטיות",
+                "ד' הרכבה נקבע אך ורק לפי החלטת המוסד לבטיחות ולגיהות"
+            ],
+            correct: 1,
+            exp: "לפי סעיף 12 לחוק, ועדת בטיחות תורכב מנציגי המעסיק ומנציגי העובדים במספר שווה."
+        },
+        {
+            q: "מהי סמכותה של ועדת בטיחות לגבי עובד שממשיך להפר הוראות בטיחות, לפי סעיף 14 לחוק?",
+            options: [
+                "א' להורות על פיטוריו המיידיים של העובד ללא שימוע",
+                "ב' להמליץ לפני המעסיק להטיל על העובד קנס או להשעותו מעבודה לתקופה מוגבלת",
+                "ג' להגיש תלונה פלילית ישירה למשטרת ישראל",
+                "ד' להפחית עד 50% בשכרו החודשי של העובד"
+            ],
+            correct: 1,
+            exp: "סעיף 14 לחוק מעניק לוועדת בטיחות את הסמכות להמליץ לפני המעסיק לנקוט צעדי משמעת, כגון קנס או השעיה מעבודה, נגד עובד המפר הוראות בטיחות."
+        },
+        {
+            q: "מי רשאי להיבחר לתפקיד 'נאמן בטיחות' במפעל לפי סעיף 19 לחוק?",
+            options: [
+                "א' רק מנהלים או מפקחים שהוסמכו על ידי המעסיק",
+                "ב' עובד המפעל שנבחר או מונה על ידי העובדים או נציגותם",
+                "ג' רק עובד בעל תואר הנדסי או רישיון ממונה על בטיחות",
+                "ד' עובד חיצוני הממונה מטעם משרד העבודה"
+            ],
+            correct: 1,
+            exp: "לפי סעיף 19 לחוק, נאמן בטיחות הוא עובד המפעל שנבחר או מונה על ידי העובדים/ווד העובדים במפעל."
+        },
+        {
+            q: "מהי הזכות הניתנת לנאמן בטיחות במפעל לצורך מילוי תפקידו לפי סעיף 21 לחוק?",
+            options: [
+                "א' להיקבע כמנהל העבודה הרשמי של האתר בהיעדר המנהל",
+                "ב' להיעדר מעבודתו הרגילה לזמן הנדרש למילוי תפקידו, בתיאום, מבלי להפסיד משכרו",
+                "ג me' לקבל תוספת שכר קבועה של 20% לשכרו הבסיסי",
+                "ד' לקבל חסינות מוחלטת מפני פיטורין מכל סיבה שהיא לתמיד"
+            ],
+            correct: 1,
+            exp: "סעיף 21 לחוק קובע כי המעסיק חייב לאפשר לנאמן הבטיחות להקדיש זמן למילוי תפקידיו ללא ניכוי משכרו."
+        },
+        {
+            q: "מה קובע החוק לגבי הגנה על נאמן בטיחות או חבר ועדת בטיחות מפני פגיעה בתנאי עבודתו?",
+            options: [
+                "א' אין כל הגנה בחוק; דינו כדין כל עובד רגיל",
+                "ב' אסור למעסיק לפטר עובד או לפגוע בתנאי עבודתו בשל פעילותו כנאמן או חבר ועדת בטיחות",
+                "ג' ניתן לפטרו רק באישור בכתב מראש מטעם השר לשירותי דת",
+                "ד' מותר לפגוע בשכרו בתנאי שהובא עובד חלופי להחלפתו"
+            ],
+            correct: 1,
+            exp: "סעיף 24 לחוק אוסר על מעסיק לפטר נאמן בטיחות או חבר ועדת בטיחות או לפגוע בתנאי עבודתו בשל פעולותיו למילוי תפקידו לפי החוק."
+        },
+        {
+            q: "מהו מעמדו המשפטי של 'המוסד לבטיחות ולגיהות' לפי סעיף 26 לחוק?",
+            options: [
+                "א' אגף ביצועי בתוך משרד העבודה והרווחה",
+                "ב' תאגיד סטטוטורי (גוף מאוגד עצמאי) שהוקם לפי החוק",
+                "ג' חברה פרטית בע\"מ המספקת שירותי ייעוץ עסקי",
+                "ד' עמותה רשומה הממומנת על ידי דמי חבר של המעסיקים"
+            ],
+            correct: 1,
+            exp: "סעיף 26 לחוק קובע כי המוסד לבטיחות ולגיהות הוא גוף מאוגד (תאגיד סטטוטורי) הכשיר לכל חובה, זכות ופעולה משפטית."
+        },
+        {
+            q: "מהו מנגנון הניהול העליון של המוסד לבטיחות ולגיהות המוגדר בסעיף 27 לחוק?",
+            options: [
+                "א' מועצה המורכבת מנציגי עובדים, מעסיקים והממשלה",
+                "ב' דירקטוריון פרטי הממונה באופן בלעדי על ידי שר האוצר",
+                "ג' הנהלה המורכבת ממפקחי עבודה אזוריים בלבד",
+                "ד' המוסד מנוהל ישירות על ידי מפקח העבודה הראשי ללא מועצה"
+            ],
+            correct: 0,
+            exp: "סעיף 27 לחוק קובע כי המוסד ינוהל על ידי מועצה שבה מיוצגים בשוויון נציגי עובדים ומעסיקים, לצד נציגי ממשלה."
+        },
+        {
+            q: "מהי אחת המטרות המרכזיות של המוסד לבטיחות ולגיהות המפורטת בסעיף 26 לחוק?",
+            options: [
+                "א' להטיל קנסות פליליים ולהגיש כתבי אישום נגד מעסיקים מפרים",
+                "ב' לנהל תחרות, להדריך ולטפח את הבטיחות והגיהות בעבודה",
+                "ג' לבצע בדיקות תקינות תקופתיות למכונות הרמה במקום מפקחים מוסמכים",
+                "ד' לשלם דמי פגיעה ופיצויים לנפגעי תאונות עבודה"
+            ],
+            correct: 1,
+            exp: "לפי סעיף 26 לחוק, תפקיד המוסד הוא לטפח את הבטיחות והגיהות בעבודה, לנהל הסברה, להדריך ולחקור תנאי בטיחות (גוף הסברתי/מנחה ולא אכפתי)."
+        },
+        {
+            q: "מפקח עבודה הוציא 'צו שיפור' לפי סעיף 8 לחוק. מה נדרש בצו זה?",
+            options: [
+                "א' סגירה מיידית של המפעל ללא הגבלת זמן",
+                "ב' דרישה לבצע פעולות לתיקון ליקויים בטיחותיים תוך תקופה שנקבעה בצו",
+                "ג' הסרת מנהל העבודה מתפקידו והחלפתו בממונה בטיחות",
+                "ד' חיוב המפעל ברישום מחודש במרשם החברות"
+            ],
+            correct: 1,
+            exp: "סעיף 8 לחוק קובע כי צו שיפור מורה למעסיק לתקן ליקויים ולהבטיח את מילוי הוראות החיקוק בנושאי בטיחות תוך פרק זמן המפורט בצו."
+        },
+        {
+            q: "אם מעסיק אינו מקיים הוראת צו בטיחות או צו שיפור שהוצא לו, מהי סנקציית הענישה הקבועה בחוק?",
+            options: [
+                "א' אזהרה מנהלית בלבד ללא השלכות פליליות",
+                "ב' זוהי עבירה פלילית החושפת את המעסיק לקנס כספי או מאסר",
+                "ג' שלילת זכות הנפקת חשבוניות מס למשך שנה",
+                "ד' חובת ביצוע עבודות שירות במוסד לבטיחות ולגיהות"
+            ],
+            correct: 1,
+            exp: "אי-קיום צו בטיחות או צו שיפור מהווה עבירה פלילית חמורה לפי הוראות הענישה בחוק, הגוררת קנסות כבדים או מאסר."
+        },
+        {
+            q: "מהי חובתו של מעסיק לגבי מסירת מידע למפקח עבודה הנמצא בביקורת לפי סעיף 3 לחוק?",
+            options: [
+                "א' המעסיק רשאי לסרב למסור מידע החושף סודות מסחריים ללא אישור עו\"ד",
+                "ב' המעסיק והמועבדים חייבים לענות למפקח על שאלותיו ולמסור כל ידיעה ומסמך הנדרשים לתפקידו",
+                "ג' המעסיק חייב להשיב בכתב בלבד תוך 30 ימי עסקים",
+                "ד' החובה למסור מידע חלה אך ורק אם מדובר בחקירת תאונה קטלנית"
+            ],
+            correct: 1,
+            exp: "סעיף 3(א)(4) לחוק קובע כי מפקח עבודה מוסמך לחקור כל אדם ולהתרות בו, ועל האדם למסור לו כל ידיעה ומסמך הנוגעים להוראות החוק."
+        },
+        {
+            q: "כיצד נקבע יו\"ר ועדת בטיחות במפעל לפי תקנות ארגון הפיקוח על העבודה?",
+            options: [
+                "א' נבחר תמיד באופן בלעדי על ידי מפקח העבודה האזורי",
+                "ב' המעסיק ממנה יו\"ר מבין נציגיו בוועדה, או שהיו\"ר נבחר לפי הסכמת הצדדים",
+                "ג' חבר הוועדה בעל הוותק הרב ביותר במפעל מתמנה אוטומטית",
+                "ד' נאמן הבטיחות הראשי משמש תמיד כיו\"ר הוועדה"
+            ],
+            correct: 1,
+            exp: "לפי כללי הרכב ועדת הבטיחות, היו\"ר נתמנה על ידי המעסיק מבין נציגיו בוועדה (וממלא מקומו מבין נציגי העובדים)."
+        },
+        {
+            q: "סעיף 2 לחוק קובע כי מפקחי העבודה ימונו על ידי:",
+            options: [
+                "א' שר העבודה (או הממונה על זרוע העבודה)",
+                "ב' נשיא בית הדין הארצי לעבודה",
+                "ג' מנכ\"ל המוסד לבטיחות ולגיהות",
+                "ד' המפכ\"ל וראש אגף החקירות"
+            ],
+            correct: 0,
+            exp: "סעיף 2 לחוק קובע כי השר (שר העבודה) ימנה מפקח עבודה ראשי, סגנים ומפקחי עבודה."
+        },
+        {
+            q: "מה קורה כאשר יש שוויון קולות בהצבעה שנערכה בוועדת בטיחות במפעל?",
+            options: [
+                "א' הצעת ההחלטה נדחית אוטומטית",
+                "ב' לקולו של היו\"ר יש משקל הכרעה נוסף, אלא אם נקבע אחרת בתקנון",
+                "ג' ההכרעה מועברת מידית להכרעת מפקח עבודה אזורי",
+                "ד' הוועדה מפורקת ומורכבת מחדש"
+            ],
+            correct: 1,
+            exp: "בניהול ישיבות ועדת בטיחות, במקרה של שוויון קולות, לקולו של יושב ראש הוועדה מכריע."
+        },
+        {
+            q: "מה קובע סעיף 22 לחוק לגבי תפקידי נאמן הבטיחות במפעל?",
+            options: [
+                "א' להחליף את ממונה הבטיחות ולבצע ניטורים כימיים ופיזיקליים עצמאיים",
+                "ב' לעמוד על תנאי הבטיחות והגיהות, להעיר ולהמליץ למעסיק ולנסות למנוע מפגעים",
+                "ג' לחתום על אישורי תקינות תקופתיים של קולטי אוויר ומעליות",
+                "ד' לבצע ביקורות פתע במפעלים מתחרים באותו ענף"
+            ],
+            correct: 1,
+            exp: "סעיף 22 לחוק קובע כי תפקיד נאמן הבטיחות הוא לעמוד על תנאי הבטיחות והגיהות, להעיר למנהלים על ליקויים ולהמליץ על שיפורים."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let selectedOption = null;
+    let correctAnswersCount = 0;
+    let incorrectAnswersCount = 0;
+
+    function showQuestion() {
+        const q = questions[currentQuestionIndex];
+        document.getElementById('progress-text').innerText = `שאלה ${currentQuestionIndex + 1} מתוך ${questions.length}`;
+        document.getElementById('question-text').innerText = q.q;
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        selectedOption = null;
+
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(idx, btn);
+            optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById('submit-btn').disabled = true;
+        document.getElementById('submit-btn').classList.remove('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('feedback-box').className = 'feedback hidden';
+    }
+
+    function selectOption(index, btnElement) {
+        selectedOption = index;
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(b => b.classList.remove('selected'));
+        btnElement.classList.add('selected');
+        document.getElementById('submit-btn').disabled = false;
+    }
+
+    function submitAnswer() {
+        if (selectedOption === null) return;
+
+        const q = questions[currentQuestionIndex];
+        const buttons = document.querySelectorAll('.option-btn');
+        const feedbackBox = document.getElementById('feedback-box');
+
+        buttons.forEach(b => b.disabled = true);
+        document.getElementById('submit-btn').classList.add('hidden');
+        document.getElementById('next-btn').classList.remove('hidden');
+
+        const isCorrect = (selectedOption === q.correct);
+
+        if (isCorrect) {
+            correctAnswersCount++;
+            feedbackBox.className = 'feedback correct';
+            feedbackBox.innerHTML = `<strong>תשובה נכונה!</strong><div class="explanation">${q.exp}</div>`;
+        } else {
+            incorrectAnswersCount++;
+            feedbackBox.className = 'feedback incorrect';
+            feedbackBox.innerHTML = `<strong>תשובה שגויה.</strong> התשובה הנכונה היא: <strong>${q.options[q.correct]}</strong><div class="explanation">${q.exp}</div>`;
+        }
+
+        feedbackBox.classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+        } else {
+            showSummary();
+        }
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('summary-screen').classList.remove('hidden');
+
+        document.getElementById('correct-count').innerText = correctAnswersCount;
+        document.getElementById('incorrect-count').innerText = incorrectAnswersCount;
+
+        const scorePercent = Math.round((correctAnswersCount / questions.length) * 100);
+        document.getElementById('final-score').innerText = `${scorePercent}%`;
+    }
+
+    function resetQuiz() {
+        currentQuestionIndex = 0;
+        correctAnswersCount = 0;
+        incorrectAnswersCount = 0;
+        document.getElementById('summary-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        showQuestion();
+    }
+
+    // הפעלה מיידית בטעינה
+    showQuestion();
+</script>
+
+</body>
+</html>

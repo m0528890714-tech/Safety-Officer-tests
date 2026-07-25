@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מבחן הסמכה: תכנית לניהול בטיחות (התשע"ג-2013)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        .correct-anim {
+            animation: pulse-green 0.4s ease-in-out;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="text-slate-100 flex items-center justify-center p-4 md:p-8 min-h-screen">
+
+    <div class="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-auto">
+        <!-- Header -->
+        <header class="bg-slate-800/80 border-b border-slate-700/60 p-6 text-center relative">
+            <span class="inline-block px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold rounded-full mb-2">
+                תקנות ארגון הפיקוח על העבודה
+            </span>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-wide">
+                תכנית לניהול הבטיחות (התשע"ג-2013)
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">מבחן הסמכה מקצועי ברמת קושי גבוהה | 20 שאלות</p>
+        </header>
+
+        <!-- Main Body -->
+        <div class="p-6 md:p-8">
+            <!-- Progress Bar & Status -->
+            <div id="stats-bar" class="flex justify-between items-center mb-6 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <span class="text-xs text-slate-400">שאלה:</span>
+                    <span id="current-idx" class="text-lg font-bold text-blue-400">1</span>
+                    <span class="text-xs text-slate-500">/ 20</span>
+                </div>
+                <!-- Progress track -->
+                <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300 w-0"></div>
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <span class="text-xs text-slate-400">ניקוד מצטבר:</span>
+                    <span id="score" class="text-lg font-bold text-emerald-400">0</span>
+                </div>
+            </div>
+
+            <!-- Quiz Interactive View -->
+            <div id="quiz-content" class="space-y-6">
+                <div class="bg-slate-800/30 p-5 rounded-xl border border-slate-700/50">
+                    <h2 id="question-text" class="text-lg md:text-xl font-bold text-slate-100 leading-relaxed">
+                        <!-- שאלה תוזן כאן -->
+                    </h2>
+                </div>
+
+                <div id="options-grid" class="grid grid-cols-1 gap-3">
+                    <!-- תשובות יוזנו דינמית -->
+                </div>
+
+                <!-- Feedback Panel -->
+                <div id="feedback" class="hidden p-5 rounded-xl border transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span id="feedback-icon" class="text-xl"></span>
+                        <h3 id="feedback-title" class="font-bold text-lg"></h3>
+                    </div>
+                    <p id="feedback-msg" class="text-sm leading-relaxed text-slate-300 mb-3"></p>
+                    <div id="feedback-source" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-900/60 text-slate-400 inline-block border border-slate-700/50"></div>
+                    
+                    <button id="next-btn" onclick="nextQuestion()" class="mt-5 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-200">
+                        המשך לשאלה הבאה ←
+                    </button>
+                </div>
+            </div>
+
+            <!-- Final Results View -->
+            <div id="final-screen" class="hidden text-center py-8 space-y-6">
+                <div class="inline-flex p-4 rounded-full bg-blue-500/10 border border-blue-500/20 mb-2">
+                    <svg class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-extrabold text-white">המבחן הושלם!</h2>
+                
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 max-w-sm mx-auto space-y-2">
+                    <div class="text-slate-400 text-sm">ציון סופי</div>
+                    <div class="text-5xl font-extrabold text-blue-400" id="final-percent">0%</div>
+                    <div class="text-sm text-slate-300 pt-2 border-t border-slate-700/60" id="final-stats"></div>
+                </div>
+
+                <div id="final-evaluation" class="text-base text-slate-300 max-w-md mx-auto"></div>
+
+                <button onclick="location.reload()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-8 py-3.5 rounded-xl font-bold shadow-xl transition transform hover:scale-105">
+                    התחל מבחן מחדש
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "על פי תקנה 2(א)(1) לתקנות, על איזה מקום עבודה חלה חובה ישירה ואוטומטית להכין תכנית לניהול בטיחות (ללא צורך בדרישה פרטנית ממפקח)?",
+                options: [
+                    "א. כל מקום עבודה המעסיק 20 עובדים לפחות",
+                    "ב. מפעל כהגדרתו בפקודת הבטיחות בעבודה המעסיק 50 עובדים לפחות",
+                    "ג. כל אתר בנייה או עבודות הנדסה אזרחית המעסיק מעל 10 עובדים",
+                    "ד. רק מקומות עבודה המאחסנים חומרים מסוכנים מעל 50 טון"
+                ],
+                correct: 1,
+                source: "תקנה 2(א)(1): חובה על מחזיק במפעל המעסיק 50 עובדים לפחות להכין תכנית לניהול בטיחות."
+            },
+            {
+                q: "מי רשאי לערוך ולנסח את התכנית לניהול הבטיחות עבור מקום העבודה לפי תקנה 4?",
+                options: [
+                    "א. מנהל העבודה במפעל בלבד, בתנאי שעבר השתלמות של 40 שעות",
+                    "ב. ממונה על בטיחות בעל אישור כשירות תקף, או אדם שאישר מפקח עבודה ראשי",
+                    "ג. כל הנדסאי או מהנדס המועסק במפעל לפחות שנתיים",
+                    "ד. אך ורק מפקח עבודה אזורי מטעם מינהל הבטיחות והבריאות התעסוקתית"
+                ],
+                correct: 1,
+                source: "תקנה 4: התכנית תיערך בידי ממונה על בטיחות בעל אישור כשירות תקף, או אדם שאישר מפקח עבודה ראשי."
+            },
+            {
+                q: "כיצד מגדירות התקנות בתקנה 2(ב) את סמכותו של מפקח עבודה אזורי לגבי מקום עבודה המעסיק פחות מ-50 עובדים?",
+                options: [
+                    "א. אין למפקח סמכות להורות על הכנת תכנית אם יש במקום פחות מ-50 עובדים",
+                    "ב. מפקח עבודה אזורי רשאי להורות בכתב לכל מחזיק להכין תכנית, ללא תלות במספר העובדים",
+                    "ג. המפקח רשאי לדרוש תכנית רק במידה והתרחשה תאונה קטלנית במקום העבודה",
+                    "ד. דרישת מפקח תקפה רק אם נתנה עליה הסכמה בכתב מאת המנהל הכללי"
+                ],
+                correct: 1,
+                source: "תקנה 2(ב): מפקח עבודה אזורי רשאי להורות בכתב לכל מחזיק במקום עבודה להכין תכנית לניהול בטיחות, גם אם אינו עונה על הקריטריונים היבשים בתקנה 2(א)."
+            },
+            {
+                q: "מהי תדירות עדכון התכנית לניהול הבטיחות הנדרשת לפי תקנה 10?",
+                options: [
+                    "א. פעם ב-3 שנים, או בעת התחלפות הממונה על הבטיחות",
+                    "ב. אחת לשנה לפחות, וכן בעקבות שינויים משמעותיים במקום העבודה או בעקבות תאונה קשה/אירוע מסוכן",
+                    "ג. עדכון התכנית אינו חובה לאחר שאושרה פעם אחת, אלא אם הורה על כך מפקח",
+                    "ד. אחת לשנתיים קלנדריות בדיוק"
+                ],
+                correct: 1,
+                source: "תקנה 10: העדכון יבוצע אחת לשנה לפחות, וכן בעקבות שינוי משמעותי במקום העבודה או בעקבות תאונת עבודה קשה/אירוע מסוכן."
+            },
+            {
+                q: "מהי הדרישה הפורמלית לגבי פרק 1 בתוספת – 'הצהרת מדיניות הבטיחות והגיהות' של המפעל?",
+                options: [
+                    "א. המדיניות צריכה להישמר בסודיות במשרד המנהל הכללי",
+                    "ב. המדיניות חייבת להיות חתומה בידי המנהל הכללי/הדרג הניהולי הבכיר ביותר ומופצת לעובדים",
+                    "ג. מבוססת על נוסח אחיד המפורסם ברשומות ואין לשנותו",
+                    "ד. מספיק לציין שהמפעל פועל 'לפי כל דין' ללא תיאור מפורט של מדיניות"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 1: תיאור המדיניות בנושאי בטיחות וגיהות חייב להיות חתום בידי הדרג הניהולי הבכיר ביותר ומופץ במקום העבודה."
+            },
+            {
+                q: "מהו המבנה והתהליך הנדרש בפרק 'ניהול סיכונים' הכלול בתוספת לתקנות (חלק ב', סעיף 3)?",
+                options: [
+                    "א. רשימה שמית של העובדים העובדים בגובה בלבד",
+                    "ב. תהליך שיטתי הכולל איתור וזיהוי גורמי סיכון, הערכת הסיכונים, וקביעת אמצעי בקרה ובקרה תקופתית",
+                    "ג. תיאור כללי של הביטוח הפנסיוני והנזקים הכספיים במפעל",
+                    "ד. רישום של קנסות עבר שניתנו ע\"י מנהל הבטיחות והבריאות התעסוקתית"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 3: פרק ניהול סיכונים מחייב איתור וזיהוי גורמי סיכון, הערכת סיכונים וקביעת בקרות מתאימות."
+            },
+            {
+                q: "על פי תקנה 11 לתקנות, על מי חלה האחריות הבלעדית לוודא כי התכנית מבוצעת ומיושמת הלכה למעשה?",
+                options: [
+                    "א. על מפקח העבודה האזורי שבתחומו נמצא המפעל",
+                    "ב. על ממונה הבטיחות שערך את התכנית",
+                    "ג. על המחזיק במקום העבודה",
+                    "ד. על יושב ראש ועדת הבטיחות"
+                ],
+                correct: 2,
+                source: "תקנה 11: המחזיק במקום העבודה יוודא כי התכנית מבוצעת ומיושמת הלכה למעשה."
+            },
+            {
+                q: "בנוגע לקבלנים המועסקים במקום העבודה, מה נדרש לפרט בתכנית לניהול הבטיחות לפי סעיף 10 לתוספת?",
+                options: [
+                    "א. אין חובה להתייחס לקבלנים, שכן הם ישויות משפטיות נפרדות",
+                    "ב. קביעת הוראות ונהלים לבטיחות בעבודת קבלנים, תיאום בטיחותי ופיקוח על עבודתם במקום העבודה",
+                    "ג. רק את שמות מנהלי עבודה של חברות הקבלן המבקרים במפעל",
+                    "ד. פירוט עלויות החוזים הכספיים שנחתמו מול הקבלנים"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 10: התכנית תפרט את ההוראות והנהלים להבטחת הבטיחות בעבודת קבלנים המופעלים במקום העבודה והפיקוח עליהם."
+            },
+            {
+                q: "מה נדרש לכלול בפרק 'מתקנים וציוד הטעונים בדיקה תקופתית' לפי סעיף 5 לתוספת?",
+                options: [
+                    "א. רשימת הציוד והמתקנים הטעונים בדיקה על פי דין, מועדי הבדיקה הנדרשים וזהות הבודק המוסמך/הגורם המוסמך",
+                    "ב. רק מתקנים שגילם עולה על 10 שנים",
+                    "ג. הצהרה כללית שכל המכונות במפעל נבדקות מדי פעם",
+                    "ד. רשימת המחשבים והשרתים של מחלקת מערכות מידע"
+                ],
+                correct: 0,
+                source: "תוספת, חלק ב', סעיף 5: התכנית תכלול רשימה מפורטת של המתקנים, המכונות והציוד הטעונים בדיקות תקופתיות על פי כל דין ומועדי בדיקתם."
+            },
+            {
+                q: "מהי הדרישה האופרטיבית לגבי פרק 'היערכות למצבי חירום' בתוספת (סעיף 11)?",
+                options: [
+                    "א. מספיק להחזיק במשרד את מספר הטלפון של תחנת כיבוי האש הקרובה",
+                    "ב. מיפוי מצבי חירום פוטנציאליים, סדרי תגובה, הגדרת צוותי חירום, ציוד חירום וביצוע תרגולים תקופתיים",
+                    "ג. התייחסות למצבי חירום נדרשת רק במפעלים המעסיקים מעל 250 עובדים",
+                    "ד. הגשת תכנית חירום לאישור פיקוד העורף בלבד ללא תתרגול עובדים"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 11: היערכות למצבי חירום מחייבת קביעת נהלים, אמצעים, צוותי חירום ותרגול תקופתי של התכנית."
+            },
+            {
+                q: "איזה מבין הבאים נכון לגבי שמירת התכנית לניהול הבטיחות ונגישותה לפי תקנה 9?",
+                options: [
+                    "א. התכנית תישמר במקום העבודה, ותהיה נגישה לעיון מפקח עבודה, ועדת בטיחות או נציג עובדים",
+                    "ב. התכנית חייבת להישמר בכספת סגורה ואין לאפשר לעובדים לעיין בה בשום מקרה",
+                    "ג. יש לשלוח את המקור למשרד העבודה ולא לשמור עותק במפעל",
+                    "ד. זמינה לעיון אך ורק למנהל הכללי ולרופא התעסוקתי"
+                ],
+                correct: 0,
+                source: "תקנה 9: המחזיק יחזיק את התכנית המעודכנת במקום העבודה ויאפשר עיון בה לנציג עובדים, לחברי ועדת הבטיחות ולמפקח עבודה."
+            },
+            {
+                q: "מתי חייבת התכנית לכלול תכנית ל'ניטור סביבתי תעסוקתי' לפי סעיף 8 לתוספת?",
+                options: [
+                    "א. בכל מפעל, ללא קשר לסוג הציוד או החומרים הנמצאים בו",
+                    "ב. כאשר במקום העבודה קיימים גורמים מזיקים (כימיים, פיזיקליים או ביולוגיים) הטעונים ניטור לפי תקנות הבטיחות",
+                    "ג. רק במידה והתקבלה תלונה רשמית מאחד העובדים על זיהום אוויר",
+                    "ד. ניטור סביבתי אינו חלק מתכנית לניהול בטיחות אלא מתבצע רק ע\"י משרד להגנת הסביבה"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 8: יש לקבוע תכנית לביצוע ניטור סביבתי תעסוקתי של גורמים מזיקים בהתאם לתקנות החלות על מקום העבודה."
+            },
+            {
+                q: "מה נדרש לכלול בפרק 'חקירת תאונות עבודה ואירועים מסוכנים' בתוספת (סעיף 12)?",
+                options: [
+                    "א. דיווח מיידי לחברת הביטוח בלבד למניעת תביעות נזיקין",
+                    "ב. נוהל לדיווח, חקירה פנימית של תאונות ואירועי 'כמעט ונפגע', הפקת לקחים וקביעת אמצעים למניעת הישנותם",
+                    "ג. רשימה של עורכי דין המייצגים את המפעל במקרה של תאונה",
+                    "ד. נוהל להטלת קנסות כספיים על עובד שהיה מעורב בתאונה"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 12: התכנית תפרט את השיטה והנוהל לדיווח, חקירה, הפקת לקחים ומעקב אחר תיקון ליקויים בעקבות תאונות ואירועים מסוכנים."
+            },
+            {
+                q: "איך מגדירה התוספת (סעיף 7) את הטיפול ב'בדיקות רפואיות תעסוקתיות' במסגרת התכנית?",
+                options: [
+                    "א. שמירת התיקים הרפואיים של העובדים בתוך תיק התכנית המגלוי לכל",
+                    "ב. קביעת מנגנון ארגוני למעקב אחר ביצוע בדיקות רפואיות תקופתיות לעובדים החשופים לגורמים מזיקים כנדרש בדין",
+                    "ג. חובה לבצע בדיקת דם מקיפה לכל עובדי המפעל אחת לחודש",
+                    "ד. ביטול הבדיקות הרפואיות התקופתיות במידה ונעשה שימוש בציוד מגן אישי"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 7: התכנית תכלול מנגנון למעקב וביצוע בדיקות רפואיות תקופתיות לעובדים החשופים לגורמים מזיקים על פי דין."
+            },
+            {
+                q: "מה חייבת התכנית להסדיר בנושא 'ציוד מגן אישי' (צמ\"א) לפי סעיף 9 לתקנות?",
+                options: [
+                    "א. תהליך להערכת הצרכים, קביעת סוגי הציוד, הספקתו, הדרכה לשימוש, תחזוקתו ובקרה על ענידתו בפועל",
+                    "ב. הדרישה מתמצה בכך שהמעסיק מעביר לעובד תקציב כספי לקניית ציוד באופן עצמאי",
+                    "ג. אספקת ציוד מגן אישי נדרשת רק לעובדי קבלן ולא לעובדים קבועים",
+                    "ד. רישום של מחירי ציוד המגן שנרכש מהספקים השונים"
+                ],
+                correct: 0,
+                source: "תוספת, חלק ב', סעיף 9: התכנית תפרט את אופן ניהול ציוד המגן האישי: קביעת התאימות, האספקה, התחזוקה והפיקוח על השימוש בו."
+            },
+            {
+                q: "מה קובעת תקנה 3 לתקנות לגבי סמכותו של מפקח עבודה ראשי בנוגע למבנה התכנית?",
+                options: [
+                    "א. מפקח עבודה ראשי אינו מוסמך לשנות או להוסיף על הפרטים המופיעים בתוספת לתקנות",
+                    "ב. מפקח עבודה ראשי רשאי להורות על הוספת פרטים או נושאים לתכנית מעבר לפרטים המפורטים בתוספת",
+                    "ג. מפקח עבודה ראשי חייב לאשר אישית כל תכנית לניהול בטיחות שנכתבת בישראל",
+                    "ד. המפקח רשאי לפטור כל מפעל מהכנת תכנית ללא נימוק"
+                ],
+                correct: 1,
+                source: "תקנה 3: התכנית תכלול את הפרטים המפורטים בתוספת וכל פרט נוסף כפי שהורה מפקח עבודה ראשי."
+            },
+            {
+                q: "מה כולל פרק 'פיקוח ובקרה פנימיים' הנדרש לפי סעיף 13 לתוספת?",
+                options: [
+                    "א. בדיקת שעות הנוכחות של העובדים בכניסה למפעל באמצעות כרטיס מגנטי",
+                    "ב. ביצוע סיורי בטיחות תקופתיים, מבדקים פנימיים יזומים, מעקב אחר תיקון ליקויים ובדיקת יישום הוראות הבטיחות",
+                    "ג. התקנת מצלמות אבטחה בלבד בכל שטחי המפעל",
+                    "ד. העסקת שומר בכניסה למפעל לבדיקת תיקים"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 13: הפרק דורש מנגנוני פיקוח ובקרה פנימיים (כגון סיורי בטיחות ומבדקים) להבטחת רמת הבטיחות במקום העבודה."
+            },
+            {
+                q: "במידה והתרחש במפעל שינוי טכנולוגי משמעותי במערך הייצור באמצע השנה, כיצד על המעסיק לפעול לפי תקנה 10?",
+                options: [
+                    "א. להמתין למועד העדכון השנתי הקבוע ועד אז לעבוד לפי התכנית הישנה",
+                    "ב. לעדכן את התכנית לניהול הבטיחות מיד בעקבות השינוי המשמעותי",
+                    "ג. השינוי אינו מצריך עדכון של התכנית אלא רק הודעה בעל פה למפקח",
+                    "ד. לבטל את התכנית הקיימת ולבקש פטור ממפקח עבודה אזורי"
+                ],
+                correct: 1,
+                source: "תקנה 10: חובת עדכון התכנית חלה פעם בשנה לפחות וכן מיד בעקבות התרחשות שינויים משמעותיים במקום העבודה."
+            },
+            {
+                q: "כיצד משתלבת 'ועדת הבטיחות' של המפעל במבנה התכנית לניהול הבטיחות לפי התוספת (חלק ב', סעיף 2)?",
+                options: [
+                    "א. ועדת הבטיחות היא הגוף המשפטי היחיד הרשאי לחתום על התכנית",
+                    "ב. התכנית תפרט את המבנה הארגוני של מערך הבטיחות, כולל הגדרת סדרי עבודת ועדת הבטיחות ושיתופה",
+                    "ג. ועדת הבטיחות פטורה מעיון בתכנית לניהול הבטיחות",
+                    "ד. ועדת הבטיחות מוסמכת לבטל סעיפים בתכנית ללא אישור המחזיק"
+                ],
+                correct: 1,
+                source: "תוספת, חלק ב', סעיף 2: התכנית תפרט את תיאור המבנה הארגוני של מערך הבטיחות, כולל סדרי עבודת ועדת הבטיחות ונאמני הבטיחות."
+            },
+            {
+                q: "על פי תקנה 2(א)(2), אילו מקומות עבודה נוספים חייבים בהכנת תכנית לניהול בטיחות מלבד מפעל המעסיק 50 עובדים?",
+                options: [
+                    "א. מקומות עבודה שנכללו בהודעה שפרסם השר ברשומות (כגון סוגי מוסדות או אתרים מסוימים)",
+                    "ב. כל חנות קמעונאית המשתרעת על פני יותר מ-100 מ\"ר",
+                    "ג. כל משרד המעסיק מעל 5 עובדי מנהלה",
+                    "ד. אך ורק מקומות עבודה השייכים למגזר הממשלתי"
+                ],
+                correct: 0,
+                source: "תקנה 2(א)(2): חובת הכנת תכנית חלה גם על מקום עבודה הנמנה עם סוג מקומות עבודה שקבע השר בהודעה שפורסמה ברשומות."
+            }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        function initQuiz() {
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[currentIdx];
+            document.getElementById('current-idx').innerText = currentIdx + 1;
+            document.getElementById('question-text').innerText = q.q;
+            
+            // Update progress bar
+            const progressPct = ((currentIdx) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPct}%`;
+
+            // Reset feedback
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.classList.add('hidden');
+            
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full text-right p-4 rounded-xl font-semibold border text-slate-200 border-slate-700/80 bg-slate-800/60 hover:bg-slate-700/80 hover:border-slate-500 focus:outline-none";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(idx);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx) {
+            const q = questions[currentIdx];
+            const btns = document.querySelectorAll('.option-btn');
+            
+            // Disable all option buttons
+            btns.forEach(btn => btn.disabled = true);
+            
+            const feedbackDiv = document.getElementById('feedback');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackMsg = document.getElementById('feedback-msg');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackSource = document.getElementById('feedback-source');
+            
+            feedbackDiv.classList.remove('hidden');
+            
+            if (selectedIdx === q.correct) {
+                btns[selectedIdx].className = "option-btn correct-anim w-full text-right p-4 rounded-xl font-bold border border-emerald-500 bg-emerald-950/80 text-emerald-200";
+                score += 5;
+                correctCount++;
+                feedbackIcon.innerText = "✅";
+                feedbackTitle.innerText = "תשובה נכונה מאוד!";
+                feedbackTitle.className = "font-bold text-lg text-emerald-400";
+                feedbackDiv.className = "p-5 rounded-xl border border-emerald-500/40 bg-emerald-950/30";
+                feedbackMsg.innerText = "ביצעת בחירה מדויקת בהתאם לדרישות תקנות תכנית לניהול הבטיחות.";
+            } else {
+                btns[selectedIdx].className = "option-btn w-full text-right p-4 rounded-xl font-bold border border-rose-500 bg-rose-950/80 text-rose-200";
+                btns[q.correct].className = "option-btn w-full text-right p-4 rounded-xl font-bold border border-emerald-500 bg-emerald-950/40 text-emerald-300";
+                wrongCount++;
+                feedbackIcon.innerText = "❌";
+                feedbackTitle.innerText = "תשובה שגויה";
+                feedbackTitle.className = "font-bold text-lg text-rose-400";
+                feedbackDiv.className = "p-5 rounded-xl border border-rose-500/40 bg-rose-950/30";
+                feedbackMsg.innerHTML = `<span class="font-bold text-slate-200">התשובה הנכונה היא:</span> ${q.options[q.correct]}`;
+            }
+            
+            feedbackSource.innerText = q.source;
+            document.getElementById('score').innerText = score;
+        }
+
+        function nextQuestion() {
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                renderQuestion();
+            } else {
+                showFinal();
+            }
+        }
+
+        function showFinal() {
+            document.getElementById('quiz-content').classList.add('hidden');
+            document.getElementById('stats-bar').classList.add('hidden');
+            
+            const finalScreen = document.getElementById('final-screen');
+            finalScreen.classList.remove('hidden');
+            
+            const percent = Math.round((correctCount / questions.length) * 100);
+            document.getElementById('final-percent').innerText = percent + "%";
+            document.getElementById('final-stats').innerText = `תשובות נכונות: ${correctCount} | תשובות שגויות: ${wrongCount}`;
+
+            const evalDiv = document.getElementById('final-evaluation');
+            if (percent >= 80) {
+                evalDiv.innerHTML = `<p class="text-emerald-400 font-bold text-lg mb-1">כל הכבוד! עברת את המבחן בהצלחה רבה!</p><p class="text-slate-400">יש לך שליטה מצוינת בתקנות תכנית לניהול הבטיחות (2013).</p>`;
+            } else if (percent >= 60) {
+                evalDiv.innerHTML = `<p class="text-amber-400 font-bold text-lg mb-1">עברת את המבחן, אך מומלץ לרענן נושאים נוספים.</p><p class="text-slate-400">סקור את סעיפי התקנות והתוספת שבהם טעית על מנת להבטיח בקיאות מלאה.</p>`;
+            } else {
+                evalDiv.innerHTML = `<p class="text-rose-400 font-bold text-lg mb-1">לא עברת את ציון הסף להסמכה.</p><p class="text-slate-400">מומלץ לקרוא בעיון את תקנות ארגון הפיקוח על העבודה (תכנית לניהול הבטיחות) ולנסות שוב.</p>`;
+            }
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
