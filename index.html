@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מבחנים בבטיחות בעבודה - ממונה על הבטיחות</title>
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-top: 5px solid var(--primary-color);
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        .tests-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .test-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .test-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .test-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .btn-start {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: background-color 0.2s;
+        }
+
+        .test-card:hover .btn-start {
+            background-color: var(--primary-hover);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 600px) {
+            .test-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .btn-start {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>מאגר מבחנים בבטיחות בעבודה</h1>
+            <p>בחר מבחן מהרשימה כדי להתחיל באימון</p>
+        </header>
+
+        <div class="tests-grid">
+
+            <!-- מבחן 1 -->
+            <a href="סמכות חוק ארגון הפיקוח על העבודה, תשיד-1954.html" class="test-card">
+                <div class="test-title">סמכות חוק ארגון הפיקוח על העבודה, תשי"ד-1954</div>
+                <span class="btn-start">התחל מבחן</span>
+            </a>
+
+            <!-- מבחן 2 -->
+            <a href="תכנית לניהול הבטיחות.html" class="test-card">
+                <div class="test-title">תכנית לניהול הבטיחות</div>
+                <span class="btn-start">התחל מבחן</span>
+            </a>
+
+            <!-- מבחן 3 -->
+            <a href="תקנות מסירת מידע והדרכת עובדים.html" class="test-card">
+                <div class="test-title">תקנות מסירת מידע והדרכת עובדים</div>
+                <span class="btn-start">התחל מבחן</span>
+            </a>
+
+            <!-- מבחן 4 -->
+            <a href="שאלות תזמון.html" class="test-card">
+                <div class="test-title">שאלות תזמון</div>
+                <span class="btn-start">התחל מבחן</span>
+            </a>
+
+        </div>
+
+        <footer>
+            מערכת תרגול ומבחנים בבטיחות בעבודה
+        </footer>
+    </div>
+
+</body>
+</html>
