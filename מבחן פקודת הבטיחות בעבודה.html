@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מבחן בקיאות: פקודת הבטיחות בעבודה 1970</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            background-color: #0f172a;
+        }
+        .card-gradient {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+        }
+        .progress-transition {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col items-center p-4 md:p-10">
+
+    <div class="w-full max-w-4xl">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-4">
+                מבחן פקודת הבטיחות בעבודה
+            </h1>
+            <p class="text-slate-400 text-lg">נוסח חדש, תש"ל-1970 | בחינת בקיאות מקצועית</p>
+        </header>
+
+        <!-- Main Quiz Container -->
+        <div id="quiz-container" class="card-gradient border border-slate-800 rounded-3xl shadow-2xl overflow-hidden min-h-[500px] flex flex-col">
+            
+            <!-- Progress Bar -->
+            <div class="h-2 bg-slate-800 w-full">
+                <div id="progress-bar" class="h-full bg-blue-500 progress-transition w-0"></div>
+            </div>
+
+            <!-- Quiz Content -->
+            <div id="quiz-content" class="p-6 md:p-10 flex-grow">
+                <!-- Status Row -->
+                <div class="flex justify-between items-center mb-8">
+                    <div class="px-4 py-1 bg-slate-800 rounded-full text-sm font-semibold border border-slate-700">
+                        שאלה <span id="current-q-num">1</span> מתוך 20
+                    </div>
+                    <div class="text-emerald-400 font-bold">
+                        ניקוד: <span id="current-score">0</span>
+                    </div>
+                </div>
+
+                <!-- Question Area -->
+                <div id="question-area" class="fade-in">
+                    <h2 id="question-text" class="text-xl md:text-2xl font-bold mb-8 leading-tight">
+                        טוען שאלה...
+                    </h2>
+
+                    <!-- Options -->
+                    <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Options will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Feedback Area (Hidden by default) -->
+                <div id="feedback-area" class="hidden mt-8 p-6 rounded-2xl border fade-in">
+                    <div class="flex items-start gap-4">
+                        <div id="feedback-icon" class="text-3xl"></div>
+                        <div>
+                            <h3 id="feedback-title" class="font-bold text-lg mb-1"></h3>
+                            <p id="feedback-text" class="text-slate-300 mb-3"></p>
+                            <div class="inline-block px-3 py-1 bg-slate-900 rounded-lg text-xs font-mono text-blue-400 border border-slate-700" id="source-tag">
+                                סעיף בחוק
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="handleNext()" class="mt-6 w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition shadow-lg">
+                        המשך לשאלה הבאה
+                    </button>
+                </div>
+            </div>
+
+            <!-- Result Screen (Hidden by default) -->
+            <div id="result-screen" class="hidden p-10 text-center fade-in">
+                <div class="mb-6">
+                    <div id="final-medal" class="text-6xl mb-4">🏆</div>
+                    <h2 class="text-4xl font-bold mb-2">סיכום המבחן</h2>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-8">
+                    <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl">
+                        <div class="text-emerald-400 text-sm font-bold uppercase">נכונות</div>
+                        <div id="correct-count" class="text-3xl font-bold">0</div>
+                    </div>
+                    <div class="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl">
+                        <div class="text-rose-400 text-sm font-bold uppercase">שגויות</div>
+                        <div id="wrong-count" class="text-3xl font-bold">0</div>
+                    </div>
+                </div>
+
+                <div class="text-6xl font-black text-blue-400 mb-8" id="final-percentage">0%</div>
+                
+                <p id="final-evaluation" class="text-slate-400 mb-10 max-w-md mx-auto"></p>
+
+                <button onclick="location.reload()" class="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl transition transform hover:scale-105">
+                    בצע מבחן חוזר
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                q: "על פי סעיף 37 לפקודה, איזה מהחלקים הבאים חייב בגידור בטוח ללא קשר למיקומו?",
+                options: [
+                    "א. כל חלק של גלגל תנופה המחובר במישרין למניע",
+                    "ב. רק מכונות שנמצאות בגובה של פחות מ-2 מטרים מהרצפה",
+                    "ג. מכונות המופעלות על ידי חשמל בלבד",
+                    "ד. חלקים הנמצאים בחדר סגור המיועד לטכנאים בלבד"
+                ],
+                correct: 0,
+                source: "סעיף 37(1): 'כל חלק של גלגל תנופה המחובר במישרין למניע... יהיה מגודר בגידור בטוח'."
+            },
+            {
+                q: "מהי תדירות הבדיקה היסודית הנדרשת למעלית או כננת (Lifts and Hoists) על פי הפקודה?",
+                options: [
+                    "א. אחת ל-14 חודשים",
+                    "ב. אחת ל-12 חודשים",
+                    "ג. אחת ל-6 חודשים",
+                    "ד. אחת ל-24 חודשים"
+                ],
+                correct: 2,
+                source: "סעיף 82(א): 'כל מעלית וכננת ייבדקו בדיקה יסודית על ידי בודק מוסמך לפחות אחת לשישה חודשים'."
+            },
+            {
+                q: "לפי סעיף 104, באיזו תדירות יש לבדוק בדיקה יסודית 'דוד קיטור' (Steam Boiler)?",
+                options: [
+                    "א. אחת ל-6 חודשים",
+                    "ב. אחת ל-12 חודשים",
+                    "ג. אחת ל-14 חודשים",
+                    "ד. אחת ל-24 חודשים"
+                ],
+                correct: 2,
+                source: "סעיף 104(א): 'כל דוד קיטור... ייבדק בדיקה יסודית על ידי בודק מוסמך לפחות אחת ל-14 חודשים'."
+            },
+            {
+                q: "מה קובעת הפקודה (סעיף 123) לגבי ארגזי עזרה ראשונה במפעל?",
+                options: [
+                    "א. יש להחזיק ארגז אחד לכל 50 עובדים",
+                    "ב. יש להחזיק ארגז אחד לכל 150 עובדים",
+                    "ג. יש להחזיק ארגז אחד לכל 25 עובדים",
+                    "ד. מספיק ארגז אחד במרפאת המפעל לכל כמות עובדים"
+                ],
+                correct: 1,
+                source: "סעיף 123(ב): 'מספר הארגזים או התיקים יהיה אחד לכל 150 בני אדם או לחלק מהם'."
+            },
+            {
+                q: "מי רשאי לבצע 'בדיקה יסודית' של אביזרי הרמה או מכונות הרמה?",
+                options: [
+                    "א. מנהל העבודה במפעל",
+                    "ב. ממונה בטיחות בעל ותק של 5 שנים",
+                    "ג. בודק מוסמך שמונה על פי הפקודה",
+                    "ד. טכנאי השירות של היצרן"
+                ],
+                correct: 2,
+                source: "סעיף 1: 'בודק מוסמך' פירושו אדם שקיבל הסמכה ממפקח עבודה ראשי לבצע בדיקות על פי הפקודה."
+            },
+            {
+                q: "מהי הגדרת 'צעיר' על פי פקודת הבטיחות בעבודה (סעיף 1)?",
+                options: [
+                    "א. אדם שטרם מלאו לו 16 שנים",
+                    "ב. אדם שטרם מלאו לו 18 שנים",
+                    "ג. אדם שטרם מלאו לו 21 שנים",
+                    "ד. אדם בגילאי 14 עד 17"
+                ],
+                correct: 1,
+                source: "סעיף 1: 'צעיר' - אדם שטרם מלאו לו שמונה עשרה שנים."
+            },
+            {
+                q: "באילו נסיבות מותר לאדם לנקות חלק של מכונה הנמצא בתנועה (סעיף 56)?",
+                options: [
+                    "א. אם הוא עובד מיומן בעל ניסיון רב",
+                    "ב. אם הוא לובש בגדי מגן הדוקים",
+                    "ג. חל איסור מוחלט על ניקוי חלק מסוכן של מכונה כשהוא בתנועה",
+                    "ד. מותר רק אם המכונה פועלת במהירות נמוכה מאוד"
+                ],
+                correct: 2,
+                source: "סעיף 56: 'לא ינקה אדם חלק של מכונה... אם ניקוי החלק יעמיד את האדם בסכנת פגיעה על ידי חלק נע'."
+            },
+            {
+                q: "מהי החובה לגבי 'דרכי גישה' במקום העבודה (סעיף 55)?",
+                options: [
+                    "א. עליהן להיות פנויות ממכשולים רק בשעות הביקור של המפקח",
+                    "ב. על המחזיק במקום עבודה להתקין ולקיים דרכי גישה בטוחות לכל מקום שאדם צריך לעבוד בו",
+                    "ג. דרכי הגישה הן באחריות העובד בלבד",
+                    "ד. חובה זו חלה רק במפעלים המעסיקים מעל 20 עובדים"
+                ],
+                correct: 1,
+                source: "סעיף 55(א): 'בכל מקום עבודה יותקנו ויקוימו, ככל שהדבר סביר, דרכי גישה בטוחות לכל מקום שאדם צריך לעבוד בו'."
+            },
+            {
+                q: "לפי סעיף 191, מהו הדין במקרה של עבירה על הוראות הפקודה שגרמה למוות או לפגיעה גופנית קשה?",
+                options: [
+                    "א. קנס כספי נמוך בלבד",
+                    "ב. נזיפה ממפקח העבודה האזורי",
+                    "ג. העונשים המקסימליים הקבועים בחוק (קנס ו/או מאסר)",
+                    "ד. סגירת המפעל לצמיתות ללא אפשרות לערעור"
+                ],
+                correct: 2,
+                source: "סעיף 191: קובע ענישה מחמירה במקרים של רשלנות או עבירה שגרמה לפגיעה גופנית או מוות."
+            },
+            {
+                q: "באיזו תדירות יש לבדוק 'אביזר הרמה' (Chains, ropes and lifting tackle)?",
+                options: [
+                    "א. אחת ל-12 חודשים",
+                    "ב. אחת ל-6 חודשים",
+                    "ג. אחת ל-14 חודשים",
+                    "ד. אחת ל-3 חודשים"
+                ],
+                correct: 1,
+                source: "סעיף 80: 'כל שרשרת, חבל או אביזר הרמה שבשימוש... ייבדקו בדיקה יסודית לפחות אחת לשישה חודשים'."
+            },
+            {
+                q: "מה קובע סעיף 220 לגבי חובות העובד במקום העבודה?",
+                options: [
+                    "א. העובד פטור מכל אחריות בטיחותית",
+                    "ב. העובד חייב להשתמש בהתקני הבטיחות שסופקו לו ולא לעשות דבר העלול לסכן עצמו או אחרים",
+                    "ג. חובת העובד היא רק לדווח על תקלות בסוף יום העבודה",
+                    "ד. העובד אחראי רק על הציוד האישי שלו"
+                ],
+                correct: 1,
+                source: "סעיף 220: מטיל חובות ישירות על העובד להשתמש באמצעי המיגון ולא לסכן את עצמו או זולתו."
+            },
+            {
+                q: "מהי ההגדרה של 'מכונת הרמה' (Lifting Machine) לפי הפקודה?",
+                options: [
+                    "א. רק מלגזות חשמליות",
+                    "ב. מכשיר המשמש להרמת משקלים מעל 2 טון בלבד",
+                    "ג. עגורן, כננת, גלגלת, מחפר, מעלית חומרים וכל מכשיר דומה",
+                    "ד. כל כלי רכב הנע במפעל"
+                ],
+                correct: 2,
+                source: "סעיף 1: הגדרת מכונת הרמה כוללת עגורנים, כננות, גלגלות, מחפרים וכל מכשיר הרמה אחר."
+            },
+            {
+                q: "כמה מרחב עבודה (Cubic capacity) נדרש לכל עובד במפעל למניעת צפיפות (סעיף 20)?",
+                options: [
+                    "א. 5 מטר מעוקב",
+                    "ב. 11.5 מטר מעוקב",
+                    "ג. 20 מטר מעוקב",
+                    "ד. אין הגדרה כזו בחוק"
+                ],
+                correct: 1,
+                source: "סעיף 20: קובע מינימום של 11.5 מטר מעוקב לכל אדם העובד בחדר."
+            },
+            {
+                q: "לפי סעיף 115, מהי החובה בנוגע ל'מכלי אוויר' (Air Receivers)?",
+                options: [
+                    "א. יש לבדוק אותם אחת ל-14 חודשים",
+                    "ב. יש לבדוק אותם אחת ל-24 חודשים",
+                    "ג. אין חובת בדיקה תקופתית",
+                    "ד. הבדיקה היא רק ויזואלית על ידי המנהל"
+                ],
+                correct: 1,
+                source: "סעיף 115: קובע כי מכל אוויר ייבדק בדיקה יסודית לפחות אחת ל-24 חודשים."
+            },
+            {
+                q: "באילו מקרים חובה להחזיק 'חדר עזרה ראשונה' נפרד (סעיף 125)?",
+                options: [
+                    "א. בכל מפעל המעסיק מעל 50 עובדים",
+                    "ב. בכל מפעל המעסיק מעל 500 עובדים",
+                    "ג. בכל מפעל שבו קיים סיכון פיצוץ",
+                    "ד. רק אם מפקח עבודה ראשי הורה על כך בכתב"
+                ],
+                correct: 1,
+                source: "סעיף 125: 'מפעל המעסיק למעלה מ-500 בני אדם... יותקן ויקוים חדר עזרה ראשונה'."
+            },
+            {
+                q: "מהי החובה לגבי גידור 'בריכות ומכלים' המכילים נוזל חם או מחלחל (סעיף 51)?",
+                options: [
+                    "א. הגידור חייב להיות בגובה של מטר אחד לפחות",
+                    "ב. הגידור חייב להיות בגובה של 91 סנטימטרים (3 רגל) לפחות",
+                    "ג. מספיק להציב שלט אזהרה ללא גידור",
+                    "ד. הגידור נדרש רק אם הבריכה נמצאת מחוץ למבנה"
+                ],
+                correct: 1,
+                source: "סעיף 51(א): 'הקצה העליון של דופנותיהם... יהיה לפחות בגובה של 91 סנטימטרים מעל הקרקע או המדרכת'."
+            },
+            {
+                q: "מהי סמכותו של 'מפקח עבודה' בנוגע לכניסה למפעל?",
+                options: [
+                    "א. עליו להודיע בכתב 24 שעות מראש",
+                    "ב. מותר לו להיכנס רק בליווי המנהל",
+                    "ג. רשאי להיכנס לכל מפעל בכל עת סבירה, ביום או בלילה, לשם ביצוע תפקידו",
+                    "ד. מותר לו להיכנס רק אם הוגשה תלונה רשמית"
+                ],
+                correct: 2,
+                source: "מכוח פקודת הבטיחות וחוק ארגון הפיקוח על העבודה: למפקח סמכות כניסה נרחבת למקומות עבודה."
+            },
+            {
+                q: "מי חייב לוודא שכל השרשראות ואביזרי ההרמה מסומנים בעומס העבודה הבטוח (SWL)?",
+                options: [
+                    "א. הבודק המוסמך בלבד",
+                    "ב. המחזיק במקום העבודה",
+                    "ג. היצרן בלבד",
+                    "ד. עובד הייצור המשתמש באביזר"
+                ],
+                correct: 1,
+                source: "סעיף 79: 'כל שרשרת... תסומן בבירור ובאופן בולט בעומס העבודה הבטוח שלה'. האחריות הכוללת היא על המחזיק."
+            },
+            {
+                q: "מה קובע סעיף 31 לגבי אספקת מי שתייה?",
+                options: [
+                    "א. מותר להשתמש במי ברז רגילים ללא קירור",
+                    "ב. יש לספק מים בריאים לשתייה בנקודות נוחות ונגישות",
+                    "ג. העובדים צריכים להביא מים מהבית",
+                    "ד. חובה לספק מים מינרליים בבקבוקים בלבד"
+                ],
+                correct: 1,
+                source: "סעיף 31: 'בכל מפעל יותקנו ויקוימו... נקודות לאספקת מים בריאים לשתייה'."
+            },
+            {
+                q: "מהו הדין לגבי עבודה בגובה במקום שבו קיימת סכנת נפילה לעומק העולה על 2 מטרים?",
+                options: [
+                    "א. אין הנחיה ספציפית בפקודה, רק בתקנות מאוחרות יותר",
+                    "ב. הפקודה קובעת שיש להתקין אמצעי גידור או הגנה מתאימים",
+                    "ג. חובה להשתמש ברתמת בטיחות בכל מצב כזה",
+                    "ד. מותר לעבוד רק אם ישנו משטח דריכה ברוחב של מטר אחד"
+                ],
+                correct: 1,
+                source: "סעיף 55(ב): קובע חובה לספק אמצעים למניעת נפילה כאשר העבודה צריכה להתבצע במקום שבו אדם עלול ליפול למרחק העולה על 2 מטרים."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let correctAnswersCount = 0;
+        let wrongAnswersCount = 0;
+
+        function loadQuestion() {
+            const data = quizData[currentQuestion];
+            document.getElementById('current-q-num').innerText = currentQuestion + 1;
+            document.getElementById('question-text').innerText = data.q;
+            
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+            
+            data.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "text-right p-4 rounded-2xl border border-slate-700 bg-slate-800/40 hover:bg-slate-700/60 hover:border-blue-500 transition-all duration-200 fade-in font-medium";
+                btn.innerText = opt;
+                btn.onclick = () => selectOption(index);
+                optionsGrid.appendChild(btn);
+            });
+
+            // Update Progress
+            const progress = ((currentQuestion) / quizData.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('question-area').classList.remove('hidden');
+        }
+
+        function selectOption(index) {
+            const data = quizData[currentQuestion];
+            const isCorrect = (index === data.correct);
+            
+            const feedbackArea = document.getElementById('feedback-area');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackText = document.getElementById('feedback-text');
+            const sourceTag = document.getElementById('source-tag');
+            const optionsGrid = document.getElementById('options-grid');
+
+            // Disable all buttons
+            Array.from(optionsGrid.children).forEach((btn, idx) => {
+                btn.disabled = true;
+                if(idx === data.correct) {
+                    btn.classList.add('border-emerald-500', 'bg-emerald-500/10', 'text-emerald-400');
+                } else if(idx === index && !isCorrect) {
+                    btn.classList.add('border-rose-500', 'bg-rose-500/10', 'text-rose-400');
+                }
+            });
+
+            if (isCorrect) {
+                score += 5;
+                correctAnswersCount++;
+                feedbackIcon.innerText = "✅";
+                feedbackTitle.innerText = "נכון מאוד!";
+                feedbackTitle.className = "font-bold text-lg mb-1 text-emerald-400";
+                feedbackArea.className = "mt-8 p-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 fade-in";
+                feedbackText.innerText = "תשובה מדויקת. הבנת החוק שלך מצוינת.";
+            } else {
+                wrongAnswersCount++;
+                feedbackIcon.innerText = "❌";
+                feedbackTitle.innerText = "לא מדויק...";
+                feedbackTitle.className = "font-bold text-lg mb-1 text-rose-400";
+                feedbackArea.className = "mt-8 p-6 rounded-2xl border border-rose-500/30 bg-rose-500/5 fade-in";
+                feedbackText.innerText = `התשובה הנכונה היא: ${data.options[data.correct]}`;
+            }
+
+            sourceTag.innerText = data.source;
+            document.getElementById('current-score').innerText = score;
+            feedbackArea.classList.remove('hidden');
+        }
+
+        function handleNext() {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-content').classList.add('hidden');
+            document.getElementById('progress-bar').style.width = '100%';
+            
+            const resultScreen = document.getElementById('result-screen');
+            resultScreen.classList.remove('hidden');
+            
+            document.getElementById('correct-count').innerText = correctAnswersCount;
+            document.getElementById('wrong-count').innerText = wrongAnswersCount;
+            
+            const percentage = (correctAnswersCount / quizData.length) * 100;
+            document.getElementById('final-percentage').innerText = `${percentage}%`;
+            
+            const eval = document.getElementById('final-evaluation');
+            const medal = document.getElementById('final-medal');
+            
+            if (percentage >= 90) {
+                medal.innerText = "🥇";
+                eval.innerText = "מדהים! אתה בקיא ברמה של מפקח עבודה בכיר. כל הכבוד על הידע המעמיק בפקודת הבטיחות.";
+            } else if (percentage >= 70) {
+                medal.innerText = "🥈";
+                eval.innerText = "תוצאה טובה מאוד. יש לך הבנה מוצקה של דרישות החוק, עם מקום קטן לשיפור בסעיפים הטכניים.";
+            } else if (percentage >= 50) {
+                medal.innerText = "🥉";
+                eval.innerText = "עברת את המבחן, אך מומלץ לחזור ולעבור על סעיפי הבדיקות התקופתיות והגידור הבטוח.";
+            } else {
+                medal.innerText = "⚠️";
+                eval.innerText = "התוצאה נמוכה מהמצופה. בטיחות בעבודה היא נושא קריטי - מומלץ לקרוא את הפקודה בעיון ולנסות שוב.";
+            }
+        }
+
+        // Initialize
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
