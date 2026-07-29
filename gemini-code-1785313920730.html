@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מבחן הסמכה: סוגי מיגון מכונות ובטיחות מכונות אדם</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        .correct-anim {
+            animation: pulse-green 0.4s ease-in-out;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="text-slate-100 flex items-center justify-center p-4 md:p-8 min-h-screen">
+
+    <div class="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-auto">
+        <!-- Header -->
+        <header class="bg-slate-800/80 border-b border-slate-700/60 p-6 text-center relative">
+            <span class="inline-block px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold rounded-full mb-2">
+                בטיחות וגיהות בעבודה
+            </span>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-wide">
+                סוגי מיגון מכונות ובטיחות מכונות אדם
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">מבחן הסמכה מקצועי ברמת קושי גבוהה | 20 שאלות</p>
+        </header>
+
+        <!-- Main Body -->
+        <div class="p-6 md:p-8">
+            <!-- Progress Bar & Status -->
+            <div id="stats-bar" class="flex justify-between items-center mb-6 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <span class="text-xs text-slate-400">שאלה:</span>
+                    <span id="current-idx" class="text-lg font-bold text-blue-400">1</span>
+                    <span class="text-xs text-slate-500">/ 20</span>
+                </div>
+                <!-- Progress track -->
+                <div class="w-1/3 bg-slate-700 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300 w-0"></div>
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <span class="text-xs text-slate-400">ניקוד מצטבר:</span>
+                    <span id="score" class="text-lg font-bold text-emerald-400">0</span>
+                </div>
+            </div>
+
+            <!-- Quiz Interactive View -->
+            <div id="quiz-content" class="space-y-6">
+                <div class="bg-slate-800/30 p-5 rounded-xl border border-slate-700/50">
+                    <h2 id="question-text" class="text-lg md:text-xl font-bold text-slate-100 leading-relaxed">
+                        <!-- שאלה תוזן כאן -->
+                    </h2>
+                </div>
+
+                <div id="options-grid" class="grid grid-cols-1 gap-3">
+                    <!-- תשובות יוזנו דינמית -->
+                </div>
+
+                <!-- Feedback Panel -->
+                <div id="feedback" class="hidden p-5 rounded-xl border transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span id="feedback-icon" class="text-xl"></span>
+                        <h3 id="feedback-title" class="font-bold text-lg"></h3>
+                    </div>
+                    <p id="feedback-msg" class="text-sm leading-relaxed text-slate-300 mb-3"></p>
+                    <div id="feedback-source" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-900/60 text-slate-400 inline-block border border-slate-700/50"></div>
+                    
+                    <button id="next-btn" onclick="nextQuestion()" class="mt-5 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-200">
+                        המשך לשאלה הבאה ←
+                    </button>
+                </div>
+            </div>
+
+            <!-- Final Results View -->
+            <div id="final-screen" class="hidden text-center py-8 space-y-6">
+                <div class="inline-flex p-4 rounded-full bg-blue-500/10 border border-blue-500/20 mb-2">
+                    <svg class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-extrabold text-white">המבחן הושלם!</h2>
+                
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 max-w-sm mx-auto space-y-2">
+                    <div class="text-slate-400 text-sm">ציון סופי</div>
+                    <div class="text-5xl font-extrabold text-blue-400" id="final-percent">0%</div>
+                    <div class="text-sm text-slate-300 pt-2 border-t border-slate-700/60" id="final-stats"></div>
+                </div>
+
+                <div id="final-evaluation" class="text-base text-slate-300 max-w-md mx-auto"></div>
+
+                <button onclick="location.reload()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-8 py-3.5 rounded-xl font-bold shadow-xl transition transform hover:scale-105">
+                    התחל מבחן מחדש
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "מה המאפיין העיקרי של 'מגן קבוע' (Fixed Guard) לפי הוראות פקודת הבטיחות בעבודה וסדרת התקנים למיגון מכונות?",
+                options: [
+                    "א. מגן המחובר למערכת הפיקוד של המכונה ומפסיק אותה בעת פתיחה",
+                    "ב. מגן המוחזק במקומו באופן קבוע (באמצעות ריתוך או ברגים) ודורש כלי עבודה מיוחדים להסרתו",
+                    "ג. מגן המתכוונן באופן אוטומטי לפי גודל החומר המעובד",
+                    "ד. מגן אלקטרו-אופטי המזהה חדירת גוף אדם לאזור המסוכן"
+                ],
+                correct: 1,
+                source: "סעיף 37 לפקודת הבטיחות בעבודה / תקן ISO 14120: מגן קבוע מעוגן באמצעות מחברים המחיבים שימוש בכלי עבודה לפירוק ומנוע גישה ישירה לחלקים נעים."
+            },
+            {
+                q: "מהי הגדרתו של 'מגן משולב' (Interlocked Guard / מגן מצמד)?",
+                options: [
+                    "א. מגן המשלב אמצעי אוורור ומיגון מפני אבק",
+                    "ב. מגן הפועל יחד עם מערכת הבקרה כך שללא סגירתו המכונה לא תפעל, ופתיחתו עוצרת את הפעולה המסוכנת",
+                    "ג. מגן המותקן על שתי מכונות שונות במקביל",
+                    "ד. מגן שניתן להזיזו בחופשיות ללא כל השפעה על המנוע"
+                ],
+                correct: 1,
+                source: "סעיף 37 לפקודת הבטיחות בעבודה: מגן משולב (Interlock) מתנה את פעולת המנגנון הממונע בכך שהמגן סגור ונעול במקומו."
+            },
+            {
+                q: "איזה סוג מיגון נכלל תחת הקטגוריה של 'התקן מגן רגיש לנוכחות' (Presence Sensing Device)?",
+                options: [
+                    "א. מסך אור/וילון אופטי (Light Curtain) או שטיח רגיש ללחץ",
+                    "ב. שילוט אזהרה זוהר בחשיכה",
+                    "ג. מכסה פלסטיק שקוף קבוע",
+                    "ד. מפסק חירום מסוג פטרייה"
+                ],
+                correct: 0,
+                source: "תקן ISO 13855 / בטיחות מכונות: התקני מגן רגישים לנוכחות פועלים ללא מגע פיזי ומפסיקים תנועה מסוכנת בעת קטיעת קרן או דריכה."
+            },
+            {
+                q: "מהי הדרישה החוקית לגבי גידור חלקים נעים של מכונות לפי סעיף 37 לפקודת הבטיחות בעבודה?",
+                options: [
+                    "א. גידור נדרש רק כאשר המכונה פועלת במהירות העולה על 100 סל\"ד",
+                    "ב. כל חלק מסוכן במכונה חייב להיות מגודר לבטח, אלא אם הוא נמצא במיקום המבטיח בטיחות כאילו היה מגודר",
+                    "ג. מספיק להציב שלט 'זהירות חלקים נעים' ללא מגן פיזי",
+                    "ד. חובת הגידור חלה רק על תמסורות רצועה ולא על צירים מסתובבים"
+                ],
+                correct: 1,
+                source: "סעיף 37(1) לפקודת הבטיחות בעבודה [נוסח חדש]: חובה לגדור לבטח כל חלק מסוכן במכונה, אלא אם כן הוא במצב ובמיקום המבטיחים בטיחות."
+            },
+            {
+                q: "כיצד פועל 'מגן מתכוונן מעצמו' (Self-adjusting guard)?",
+                options: [
+                    "א. הוא נפתח ונסגר לפי טיימר מתוכנת מראש",
+                    "ב. הוא נפתח באופן אוטומטי על ידי החומר המעובד בלבד ועוטף את אזור החיתוך ככל הניתן",
+                    "ג. המפעיל חייב לכוון אותו בעזרת מפתח מומנט לפני כל מחזור עבודה",
+                    "ד. הוא נשלט באמצעות דוושת רגל פניאומטית"
+                ],
+                correct: 1,
+                source: "עקרונות מיגון מכונות (ISO 12100): מגן מתכוונן מעצמו נזז על ידי תנועת חומר הגלם המוחדר למכונה (כדוגמת משור עגול לבטון/עץ) וחוזר למקומו."
+            },
+            {
+                q: "מה מגדיר התקן לגבי 'מרחק הבטיחות' (Safety Distance) בהתקנת וילון אור אופטי?",
+                options: [
+                    "א. המרחק חייב להיות בדיוק 2 מטרים מכל מכונה",
+                    "ב. המרחק מחושב כך שבזמן הגעת גוף האדם לאזור המסוכן, המכונה כבר נעצרה לחלוטין (בהתחשב בזמן התגובה)",
+                    "ג. וילון האור חייב להיות צמוד ככל הניתן לחלק המסתובב",
+                    "ד. המרחק נקבע אך ורק לפי גובה המפעיל"
+                ],
+                correct: 1,
+                source: "תקן ISO 13855: מרחק הבטיחות מחושב לפי הנוסחה המתחשבת במהירות התקרבות גוף אדם (K) ובזמן העצירה הכולל של המערכת (T)."
+            },
+            {
+                q: "מהו התפקיד הייעודי של 'התקן הפעלה בשתי ידיים' (Two-Hand Control)?",
+                options: [
+                    "א. להבטיח שהמפעיל לא יוכל להפעיל את המכונה ביד אחת ובכך ידיו מוגנות מחוץ לאזור הסכנה בעת הלחיצה",
+                    "ב. לאפשר הפעלה מהירה יותר של המכונה על ידי שני עובדים במקביל",
+                    "ג. למנוע עייפות בידו הדומיננטית של העובד",
+                    "ד. להחליף את הצורך במפסק פטרייה למצב חירום"
+                ],
+                correct: 0,
+                source: "תקן EN ISO 13851: התקן הפעלה בשתי ידיים מחייב לחיצה סימולטנית בשתי הידיים כדי להבטיח שהידיים נמצאות במיקום בטוח בעת הפעולה המסוכנת."
+            },
+            {
+                q: "באיזה מקרה מותר להסיר מגן בטיחות ממכונה לפי תקנות הבטיחות?",
+                options: [
+                    "א. כאשר המפעיל מרגיש שהמגן מאיט את קצב התפוקה בשדרוג משמרת",
+                    "ב. אך ורק לצורך תחזוקה, כיוונון או תיקון, ובלבד שהמכונה כובתה, נותקה ממקורות אנרגיה (Lockout/Tagout) ונעצרה לחלוטין",
+                    "ג. במידה והעובד מרכיב משקפי בטיחות וכפפות עבודה עבות",
+                    "ד. מותר להסיר את המגן באופן קבוע אם העבודה מתבצעת באור יום מלא"
+                ],
+                correct: 1,
+                source: "סעיף 44 לפקודת הבטיחות בעבודה: כל מגן או אמצעי בטיחות יוחזק במקומו באופן תקין ולא יוסר אלא בזמן ניתוק המכונה כחוק לטיפול."
+            },
+            {
+                q: "מהי הגדרת 'מגן מתכוונן ידנית' (Adjustable Guard)?",
+                options: [
+                    "א. מגן המותאם ידנית על ידי המפעיל לגודל ועובי חומר הגלם לפני תחילת העבודה",
+                    "ב. מגן אשר משנה את גובהו באמצעות שלט רחוק",
+                    "ג. מגן המשמש רק בזמן תחזוקה ולא בזמן ייצור",
+                    "ד. מגן המורכב על גבי רובוט תעשייתי"
+                ],
+                correct: 0,
+                source: "תקן ISO 14120: מגן מתכוונן הוא מגן קבוע או משתנה שניתן לכוונן אותו באופן ידני בהתאם לממדי החומר המעובד."
+            },
+            {
+                q: "מה מהבאים מתאר נכונה את המושג 'נקודת לכידה' (Nip Point / Pinch Point)?",
+                options: [
+                    "א. נקודה שבה נחתך חומר הגלם בלייזר",
+                    "ב. אזור המפגש בין שני חלקים מסתובבים (כגון גלגלי שיניים, גלילים או רצועה וגלגלת) העלול למשוך וללכוד איברי גוף",
+                    "ג. יציאת אוויר דחוס ממערכת פניאומטית",
+                    "ד. ידית הבלם הידנית של המכונה"
+                ],
+                correct: 1,
+                source: "תורת המיגון ובטיחות מכונות: נקודת לכידה נוצרת במגעה של רצועה עם גלגלת או בין שני גלילים מסתובבים פנימה, ומחייבת מיגון קשיח."
+            },
+            {
+                q: "כיצד מגדירות התקנות את השימוש במפסק עצירת חירום (Emergency Stop)?",
+                options: [
+                    "א. הוא מהווה תחליף מלא למגן קבוע או למגן משולב",
+                    "ב. הוא אמצעי משלים בלבד למקרי חירום ואינו מהווה תחליף לאמצעי מיגון פיזיים/טכניים למניעת גישה",
+                    "ג. יש להשתמש בו כאמצעי השגרתי לכיבוי המכונה בסוף יום העבודה",
+                    "ד. מותר להתקינו רק במרחק של 5 מטרים לפחות מהמכונה"
+                ],
+                correct: 1,
+                source: "תקן ISO 13850: עצירת חירום הינה תפקודית במקרה של תקלה/סכנה ואסור שתבוא במקום אמצעי מיגון למניעת גישה לאזורים מסוכנים."
+            },
+            {
+                q: "מהו התנאי להגדרת 'בטיחות על ידי מיקום' (Safety by Position)?",
+                options: [
+                    "א. החלק המסוכן ממוקם במקום שאינו נגיש לשום אדם בתנאי עבודה רגילים (כגון בגובה רב או בתוך מרווח סגור)",
+                    "ב. המכונה ממוקמת בחדר סגור ללא תאורה",
+                    "ג. המכונה ממוקמת ליד משרדו של ממונה הבטיחות",
+                    "ד. המפעיל עומד במרחק חצי מטר מהמכונה"
+                ],
+                correct: 0,
+                source: "סעיף 37 לפקודת הבטיחות בעבודה: חלק ממוכן נחשב בטוח אם מיקומו או מבנהו מבטיחים בטיחות מלאה כאילו היה מגודר לבטח."
+            },
+            {
+                q: "מה נדרש ממגן קבוע כאשר הוא מותקן מעל תמסורת שרשרת או רצועה?",
+                options: [
+                    "א. שיהיה עשוי מזכוכית רגילה בלבד",
+                    "ב. שימנע לחלוטין מגע מקרי ויכסה את כל נקודות הלכידה והסיבוב",
+                    "ג. שיהיה פתוח בחלקו העליון לאוורור ללא הגבלה",
+                    "ד. שיהיה צבוע בצבע לבן בלבד"
+                ],
+                correct: 1,
+                source: "תקנות הבטיחות בעבודה (מיגון מכונות): מגן תמסורת מחויב לכסות היקפית את גלגלי השיניים והשרשראות למניעת תפיסת ביגוד או איברים."
+            },
+            {
+                q: "איזה סוג של מגן נדרש במכבש (Press) פניאומטי/הידראולי שבו יש להכניס ולהוציא חלקים באופן ידני בכל מחזור?",
+                options: [
+                    "א. מגן קבוע אטום לחלוטין ללא פתחים",
+                    "ב. מגן משולב נעילה (Interlock guard with guard locking) או התקן אלקטרו-אופטי (וילון אור)",
+                    "ג. שלט זהירות בלבד",
+                    "ד. שטיח גומי פשוט על הרצפה"
+                ],
+                correct: 1,
+                source: "תקני בטיחות מכבשים (EN 692 / EN 693): עבודה באזור הסכנה במכבשים מחייבת מיגון משולב ננעל או מסך אור בעל דרגת אמינות בטיחותית גבוהה (Cat 4/SIL 3)."
+            },
+            {
+                q: "מהי מטרה מרכזית של התקן 'מפסק גבול' (Limit Switch) המותקן בדלת מגן מכונה?",
+                options: [
+                    "א. למדוד את טמפרטורת האוויר בתוך המכונה",
+                    "ב. לספק אות חשמלי למערכת הפיקוד על מיקום הדלת ולנתק את האנרגיה במידה והדלת נפתחת",
+                    "ג. להגדיל את שטח המדף של המכונה",
+                    "ד. לספור את כמות הציוד המיוצר"
+                ],
+                correct: 1,
+                source: "תקן ISO 14119: מפסקי גבול (אינטרלוק) מיועדים לנטר את מצב המגן ולמנוע את פתיחתו או להפסיק תנועה מסוכנת בעת ניתוק מגע."
+            },
+            {
+                q: "מה קובע עיקרון 'Fail-Safe' (בטיחות במצב כשל) במערכות מיגון מכונות?",
+                options: [
+                    "א. במקרה של תקלה במערכת המיגון או בהזנת החשמל, המערכת תביא את המכונה אוטומטית למצב בטוח (עצירה)",
+                    "ב. המכונה תמשיך לעבוד במהירות כפולה כדי לסיים את הפעולה",
+                    "ג. המגן יפתח אוטומטית כדי לאפשר למפעיל לבדוק את התקלה תוך כדי תנועה",
+                    "ד. המערכת תצפצף אך לא תפסיק את תנועת המנגנון"
+                ],
+                correct: 0,
+                source: "עקרונות הנדסת בטיחות (ISO 13849): תכנון במתכונת Fail-Safe מבטיח שכל כשל ברכיב בטיחותי יגרום להשבתה בטוחה של הסיכון ולא להמשך עבודה מסוכנת."
+            },
+            {
+                q: "מהי החובה לגבי מפתחות ניתוק אנרגיה מכלול ננעל (Lockout/Tagout) בעת ביצוע עבודות אחזקה בתוך גבולות המיגון?",
+                options: [
+                    "א. להשאיר את המפתח בסוויץ' הראשי של המכונה",
+                    "ב. כל איש תחזוקה חייב למתוח מנעול אישי בנקודת הניתוק ולשמור את המפתח אצלו עד לסיום העבודה",
+                    "ג. למסור את המפתח למנהל המשמרת ולבקש ממנו לחבר את החשמל מחדש מרחוק",
+                    "ד. שום נהלים אינם נדרשים אם המגן סגור בחצי גובה"
+                ],
+                correct: 1,
+                source: "תקנות הבטיחות בעבודה (ציוד עבודה וניתוק אנרגיה): נוהל לוקאאוט-טאגאאוט מציב חובה על מנעול אישי של העובד למניעת הפעלה מקרית."
+            },
+            {
+                q: "איזה מבין הבאים אינו נחשב לאמצעי מיגון הנדסי (Engineering Control) לפי מדרג סכנות הבטיחות?",
+                options: [
+                    "א. מגן קבוע עשוי רשת פלדה",
+                    "ב. וילון אופטי הרגיש לתנועה",
+                    "ג. מתן הוראת עבודה בכתב ונעילת נעלי בטיחות בלבד",
+                    "ד. מגן משולב מיקרו-סוויץ'"
+                ],
+                correct: 2,
+                source: "סולם הפחתת סיכונים (ISO 12100): הוראות עבודה וציוד מגן אישי (ציוד מגן אישי) הם בקרות מנהלתיות ואינם נחשבים אמצעי מיגון הנדסי הנדסי פיזי."
+            },
+            {
+                q: "מהי הדרישה החלה על הפתחים ברשת מגן פיזי (Mesh Guard) המותקנת במרחק מסוים מחלק נע?",
+                options: [
+                    "א. הפתחים יכולים להיות בכל גודל בתנאי שהם מרובעים",
+                    "ב. גודל הפתח חייב להיות מותאם למרחק ההתקנה מהחלק המסוכן (לפי תקן), למניעת הושטת אצבעות/ידיים דרך הרשת",
+                    "ג. אסור שיהיו פתחים כלל, המגן חייב להיות פלטה אטומה מברזל יצוק",
+                    "ד. גודל הפתחים נקבע לפי עובי השמן במכונה"
+                ],
+                correct: 1,
+                source: "תקן ISO 13857: המרחק בין המגן הפיזי לחלק המסוכן קובע את המימדים המרביים של הפתחים ברשת כדי למנוע הגעה של אצבע או יד לסיכון."
+            },
+            {
+                q: "במצב של מגן נע (Movable Guard), מהי הדרישה לגבי אמצעי ההחזקה/החיבור של המגן כשהוא פתוח?",
+                options: [
+                    "א. המגן חייב להישאר מחובר למכונה או למבנה (למשל על ידי ציר) ולא ליפול או להיאבד",
+                    "ב. יש להסיר את המגן ולהניח אותו על הרצפה במרחק 5 מטרים",
+                    "ג. המגן חייב להתפרק ל-4 חלקים נפרדים",
+                    "ד. חובה לצבוע את צירי המגן בצבע אדום בלבד"
+                ],
+                correct: 0,
+                source: "תקן ISO 14120: מגנים נעים חייבים להיות מחוברים למבנה המכונה (למשל על צירים או מסילות) גם כאשר הם פתוחים."
+            }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        function initQuiz() {
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[currentIdx];
+            document.getElementById('current-idx').innerText = currentIdx + 1;
+            document.getElementById('question-text').innerText = q.q;
+            
+            // Update progress bar
+            const progressPct = ((currentIdx) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPct}%`;
+
+            // Reset feedback
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.classList.add('hidden');
+            
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full text-right p-4 rounded-xl font-semibold border text-slate-200 border-slate-700/80 bg-slate-800/60 hover:bg-slate-700/80 hover:border-slate-500 focus:outline-none";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(idx);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx) {
+            const q = questions[currentIdx];
+            const btns = document.querySelectorAll('.option-btn');
+            
+            // Disable all option buttons
+            btns.forEach(btn => btn.disabled = true);
+            
+            const feedbackDiv = document.getElementById('feedback');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackMsg = document.getElementById('feedback-msg');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackSource = document.getElementById('feedback-source');
+            
+            feedbackDiv.classList.remove('hidden');
+            
+            if (selectedIdx === q.correct) {
+                btns[selectedIdx].className = "option-btn correct-anim w-full text-right p-4 rounded-xl font-bold border border-emerald-500 bg-emerald-950/80 text-emerald-200";
+                score += 5;
+                correctCount++;
+                feedbackIcon.innerText = "✅";
+                feedbackTitle.innerText = "תשובה נכונה מאוד!";
+                feedbackTitle.className = "font-bold text-lg text-emerald-400";
+                feedbackDiv.className = "p-5 rounded-xl border border-emerald-500/40 bg-emerald-950/30";
+                feedbackMsg.innerText = "ביצעת בחירה מדויקת בהתאם לדרישות הבטיחות והתקנים.";
+            } else {
+                btns[selectedIdx].className = "option-btn w-full text-right p-4 rounded-xl font-bold border border-rose-500 bg-rose-950/80 text-rose-200";
+                btns[q.correct].className = "option-btn w-full text-right p-4 rounded-xl font-bold border border-emerald-500 bg-emerald-950/40 text-emerald-300";
+                wrongCount++;
+                feedbackIcon.innerText = "❌";
+                feedbackTitle.innerText = "תשובה שגויה";
+                feedbackTitle.className = "font-bold text-lg text-rose-400";
+                feedbackDiv.className = "p-5 rounded-xl border border-rose-500/40 bg-rose-950/30";
+                feedbackMsg.innerHTML = `<span class="font-bold text-slate-200">התשובה הנכונה היא:</span> ${q.options[q.correct]}`;
+            }
+            
+            feedbackSource.innerText = q.source;
+            document.getElementById('score').innerText = score;
+        }
+
+        function nextQuestion() {
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                renderQuestion();
+            } else {
+                showFinal();
+            }
+        }
+
+        function showFinal() {
+            document.getElementById('quiz-content').classList.add('hidden');
+            document.getElementById('stats-bar').classList.add('hidden');
+            
+            const finalScreen = document.getElementById('final-screen');
+            finalScreen.classList.remove('hidden');
+            
+            const percent = Math.round((correctCount / questions.length) * 100);
+            document.getElementById('final-percent').innerText = percent + "%";
+            document.getElementById('final-stats').innerText = `תשובות נכונות: ${correctCount} | תשובות שגויות: ${wrongCount}`;
+
+            const evalDiv = document.getElementById('final-evaluation');
+            if (percent >= 80) {
+                evalDiv.innerHTML = `<p class="text-emerald-400 font-bold text-lg mb-1">כל הכבוד! עברת את המבחן בהצלחה רבה!</p><p class="text-slate-400">יש לך שליטה מעולה בנושא מיגון מכונות ובטיחות מכונות אדם.</p>`;
+            } else if (percent >= 60) {
+                evalDiv.innerHTML = `<p class="text-amber-400 font-bold text-lg mb-1">עברת את המבחן, אך מומלץ לרענן נושאים נוספים.</p><p class="text-slate-400">סקור את הסעיפים והתקנים שבהם טעית על מנת להבטיח בקיאות מלאה.</p>`;
+            } else {
+                evalDiv.innerHTML = `<p class="text-rose-400 font-bold text-lg mb-1">לא עברת את ציון הסף להסמכה.</p><p class="text-slate-400">מומלץ לקרוא בעיון את תקנות הבטיחות בעבודה וסדרת התקנים למיגון מכונות ולנסות שוב.</p>`;
+            }
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
